@@ -133,28 +133,6 @@ API KEY = 2C9C98D7B3444C3FB9677A0AC98F3241
 
 CHATGPT - https://chatgpt.com/c/675449b6-7e00-800a-bbcc-c39053cbcbee
 
-az container create \
-  --resource-group evolution-api \
-  --name evolution-api-container \
-  --image evolutionapi.azurecr.io/evolution-api:v2.1.1 \
-  --ports 8080 \
-  --environment-variables AUTHENTICATION_API_KEY=2C9C98D7B3444C3FB9677A0AC98F3241 \
-                          DATABASE_ENABLED=true \
-                          DATABASE_PROVIDER=postgresql \
-                          DATABASE_CONNECTION_URI=postgresql://Test123:Barend123@evolutionapi.postgres.database.azure.com:5432/postgres?sslmode=require \
-                          CACHE_REDIS_ENABLED=false \
-                          CACHE_LOCAL_ENABLED=false \
-                          CONFIG_SESSION_PHONE_CLIENT="AgIzzit.co.za" \
-                          CONFIG_SESSION_PHONE_NAME="Web" \
-                          CONFIG_SESSION_PHONE_VERSION="3.2.1" \
-  --ip-address Public \
-  --cpu 1 \
-  --memory 1.5 \
-  --registry-login-server evolutionapi.azurecr.io \
-  --registry-username evolutionapi \
-  --registry-password NJVnDeBj/rgWiCnNSPmJ2Q9F3pQ/ZR5JEmhVBIgUFk+ACRDiK/8o \
-  --location southafricanorth \
-  --os-type Linux
 
 
   PRICING
