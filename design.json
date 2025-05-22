@@ -1,0 +1,123 @@
+{
+    "template": {
+    "_id": "6791f548263690552bff0575",
+    "name": "test 2",
+    "designSize": "1:1",
+    "layers": [
+    {
+    "id": "layer-1739476120309",
+    "type": "image",
+    "name": "Image Container 2",
+    "visible": true,
+    "properties": {
+    "left": 107.62898010905423,
+    "top": 523.3809080386602,
+    "scaleX": 1,
+    "scaleY": 1,
+    "angle": 0,
+    "imageIndex": 13,
+    "width": 300,
+    "height": 225
+    }
+    },
+    {
+    "id": "layer-1737618678262",
+    "type": "text",
+    "name": "Text 1",
+    "visible": true,
+    "properties": {
+    "left": 562.8075962976584,
+    "top": 768.1536957047347,
+    "scaleX": 1,
+    "scaleY": 1,
+    "angle": 0,
+    "width": 227.40898868547583,
+    "height": 58.75999999999999,
+    "variable": "price",
+    "text": "Select Variable",
+    "fontFamily": "Arial",
+    "color": "#18dc6d",
+    "textAlign": "center",
+    "bold": false,
+    "italic": false,
+    "underline": false
+    }
+    },
+    {
+    "id": "layer-1737737231125",
+    "type": "text",
+    "name": "Text 2",
+    "visible": true,
+    "properties": {
+    "left": 381.86608723859604,
+    "top": 854.5028893586057,
+    "scaleX": 1,
+    "scaleY": 1,
+    "angle": 3.083020980406433,
+    "width": 485.7916902401537,
+    "height": 77.06599999999999,
+    "variable": "description",
+    "text": "Select Variable",
+    "fontFamily": "Arial",
+    "color": "#ffffff",
+    "textAlign": "center",
+    "bold": false,
+    "italic": false,
+    "underline": false
+    }
+    },
+    {
+    "id": "design-layer",
+    "type": "design",
+    "name": "Background Design",
+    "visible": true,
+    "properties": {
+    "imageData": "data:image/png;base64,iVBORw"
+    }
+    },
+    {
+    "id": "layer-1737618667212",
+    "type": "picture",
+    "name": "Picture 1",
+    "visible": true,
+    "properties": {
+    "left": 644.6107646157421,
+    "top": 98.87345232207491,
+    "scaleX": 0.12695351345170972,
+    "scaleY": 0.12695351345170972,
+    "angle": 15.611127985181595,
+    "imageData": "data:image/jpeg;base64,/",
+    "width": 1914,
+    "height": 1080
+    }
+    },
+    {
+    "id": "layer-1737618674055",
+    "type": "image",
+    "name": "Image Container 1",
+    "visible": true,
+    "properties": {
+    "left": 194.8516471646479,
+    "top": 66.2826044724927,
+    "scaleX": 1.3713877688825151,
+    "scaleY": 1.3713877688825151,
+    "angle": 16.415474117339556,
+    "imageIndex": 2,
+    "width": 300,
+    "height": 225
+    }
+    }
+    ],
+    "createdAt": "2025-01-23T07:52:40.322Z",
+    "updatedAt": "2025-01-23T07:52:40.323Z",
+    "__v": 0
+    },
+    "aspectRatio": "4:3",
+    "images": [],
+    "texts": {
+    "price": "R199 900",
+    "description": "2008 Mercedes-Benz CLK Class Cabriolet CLK 63 AMG Cabriolet",
+    "mileage": "200 000km",
+    "category": "Vehicle"
+    }
+    }

@@ -1,0 +1,904 @@
+{
+    "places": [
+      {
+        "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8",
+        "id": "ChIJg_WboNh1lR4RhI6KwlN3fC8",
+        "types": [
+          "car_dealer",
+          "point_of_interest",
+          "store",
+          "establishment"
+        ],
+        "nationalPhoneNumber": "011 462 9045",
+        "internationalPhoneNumber": "+27 11 462 9045",
+        "formattedAddress": "234 Malibongwe Dr, Northriding, Randburg, 2169, South Africa",
+        "addressComponents": [
+          {
+            "longText": "234",
+            "shortText": "234",
+            "types": [
+              "street_number"
+            ],
+            "languageCode": "en-GB"
+          },
+          {
+            "longText": "Malibongwe Drive",
+            "shortText": "Malibongwe Dr",
+            "types": [
+              "route"
+            ],
+            "languageCode": "en"
+          },
+          {
+            "longText": "Northriding",
+            "shortText": "Northriding",
+            "types": [
+              "sublocality_level_1",
+              "sublocality",
+              "political"
+            ],
+            "languageCode": "en"
+          },
+          {
+            "longText": "Randburg",
+            "shortText": "Randburg",
+            "types": [
+              "locality",
+              "political"
+            ],
+            "languageCode": "en"
+          },
+          {
+            "longText": "City of Johannesburg Metropolitan Municipality",
+            "shortText": "City of Johannesburg Metropolitan Municipality",
+            "types": [
+              "administrative_area_level_2",
+              "political"
+            ],
+            "languageCode": "en"
+          },
+          {
+            "longText": "Gauteng",
+            "shortText": "GP",
+            "types": [
+              "administrative_area_level_1",
+              "political"
+            ],
+            "languageCode": "en"
+          },
+          {
+            "longText": "South Africa",
+            "shortText": "ZA",
+            "types": [
+              "country",
+              "political"
+            ],
+            "languageCode": "en"
+          },
+          {
+            "longText": "2169",
+            "shortText": "2169",
+            "types": [
+              "postal_code"
+            ],
+            "languageCode": "en-GB"
+          }
+        ],
+        "plusCode": {
+          "globalCode": "5G59XX24+3C",
+          "compoundCode": "XX24+3C Randburg, South Africa"
+        },
+        "location": {
+          "latitude": -26.0497633,
+          "longitude": 27.956042699999998
+        },
+        "viewport": {
+          "low": {
+            "latitude": -26.051134080291504,
+            "longitude": 27.954832719708495
+          },
+          "high": {
+            "latitude": -26.048436119708498,
+            "longitude": 27.957530680291498
+          }
+        },
+        "rating": 4.2,
+        "googleMapsUri": "https://maps.google.com/?cid=3421741018524585604",
+        "websiteUri": "https://www.right-cars.co.za/",
+        "regularOpeningHours": {
+          "openNow": true,
+          "periods": [
+            {
+              "open": {
+                "day": 1,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 1,
+                "hour": 18,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 2,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 2,
+                "hour": 18,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 3,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 3,
+                "hour": 18,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 4,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 4,
+                "hour": 18,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 5,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 5,
+                "hour": 18,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 6,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 6,
+                "hour": 15,
+                "minute": 0
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: 9:00 am – 6:00 pm",
+            "Tuesday: 9:00 am – 6:00 pm",
+            "Wednesday: 9:00 am – 6:00 pm",
+            "Thursday: 9:00 am – 6:00 pm",
+            "Friday: 9:00 am – 6:00 pm",
+            "Saturday: 9:00 am – 3:00 pm",
+            "Sunday: Closed"
+          ],
+          "nextCloseTime": "2024-11-27T16:00:00Z"
+        },
+        "utcOffsetMinutes": 120,
+        "adrFormatAddress": "\u003cspan class=\"street-address\"\u003e234 Malibongwe Dr\u003c/span\u003e, \u003cspan class=\"extended-address\"\u003eNorthriding\u003c/span\u003e, \u003cspan class=\"locality\"\u003eRandburg\u003c/span\u003e, \u003cspan class=\"postal-code\"\u003e2169\u003c/span\u003e, \u003cspan class=\"country-name\"\u003eSouth Africa\u003c/span\u003e",
+        "businessStatus": "OPERATIONAL",
+        "userRatingCount": 1306,
+        "iconMaskBaseUri": "https://maps.gstatic.com/mapfiles/place_api/icons/v2/shopping_pinlet",
+        "iconBackgroundColor": "#4B96F3",
+        "displayName": {
+          "text": "RightCars",
+          "languageCode": "en"
+        },
+        "primaryTypeDisplayName": {
+          "text": "Car Dealer",
+          "languageCode": "en-GB"
+        },
+        "delivery": true,
+        "currentOpeningHours": {
+          "openNow": true,
+          "periods": [
+            {
+              "open": {
+                "day": 1,
+                "hour": 9,
+                "minute": 0,
+                "date": {
+                  "year": 2024,
+                  "month": 12,
+                  "day": 2
+                }
+              },
+              "close": {
+                "day": 1,
+                "hour": 18,
+                "minute": 0,
+                "date": {
+                  "year": 2024,
+                  "month": 12,
+                  "day": 2
+                }
+              }
+            },
+            {
+              "open": {
+                "day": 2,
+                "hour": 9,
+                "minute": 0,
+                "date": {
+                  "year": 2024,
+                  "month": 12,
+                  "day": 3
+                }
+              },
+              "close": {
+                "day": 2,
+                "hour": 18,
+                "minute": 0,
+                "date": {
+                  "year": 2024,
+                  "month": 12,
+                  "day": 3
+                }
+              }
+            },
+            {
+              "open": {
+                "day": 3,
+                "hour": 9,
+                "minute": 0,
+                "date": {
+                  "year": 2024,
+                  "month": 11,
+                  "day": 27
+                }
+              },
+              "close": {
+                "day": 3,
+                "hour": 18,
+                "minute": 0,
+                "date": {
+                  "year": 2024,
+                  "month": 11,
+                  "day": 27
+                }
+              }
+            },
+            {
+              "open": {
+                "day": 4,
+                "hour": 9,
+                "minute": 0,
+                "date": {
+                  "year": 2024,
+                  "month": 11,
+                  "day": 28
+                }
+              },
+              "close": {
+                "day": 4,
+                "hour": 18,
+                "minute": 0,
+                "date": {
+                  "year": 2024,
+                  "month": 11,
+                  "day": 28
+                }
+              }
+            },
+            {
+              "open": {
+                "day": 5,
+                "hour": 9,
+                "minute": 0,
+                "date": {
+                  "year": 2024,
+                  "month": 11,
+                  "day": 29
+                }
+              },
+              "close": {
+                "day": 5,
+                "hour": 18,
+                "minute": 0,
+                "date": {
+                  "year": 2024,
+                  "month": 11,
+                  "day": 29
+                }
+              }
+            },
+            {
+              "open": {
+                "day": 6,
+                "hour": 9,
+                "minute": 0,
+                "date": {
+                  "year": 2024,
+                  "month": 11,
+                  "day": 30
+                }
+              },
+              "close": {
+                "day": 6,
+                "hour": 15,
+                "minute": 0,
+                "date": {
+                  "year": 2024,
+                  "month": 11,
+                  "day": 30
+                }
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: 9:00 am – 6:00 pm",
+            "Tuesday: 9:00 am – 6:00 pm",
+            "Wednesday: 9:00 am – 6:00 pm",
+            "Thursday: 9:00 am – 6:00 pm",
+            "Friday: 9:00 am – 6:00 pm",
+            "Saturday: 9:00 am – 3:00 pm",
+            "Sunday: Closed"
+          ],
+          "nextCloseTime": "2024-11-27T16:00:00Z"
+        },
+        "primaryType": "car_dealer",
+        "shortFormattedAddress": "234 Malibongwe Dr, Northriding, Randburg",
+        "reviews": [
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/reviews/ChdDSUhNMG9nS0VJQ0FnSUNIeHRXenpBRRAB",
+            "relativePublishTimeDescription": "2 months ago",
+            "rating": 5,
+            "text": {
+              "text": "Waldo was exceptional in assisting us with our purchase of a vehicle. We are grateful for the expert advice given and friendly service. Very pleased with our purchase.",
+              "languageCode": "en"
+            },
+            "originalText": {
+              "text": "Waldo was exceptional in assisting us with our purchase of a vehicle. We are grateful for the expert advice given and friendly service. Very pleased with our purchase.",
+              "languageCode": "en"
+            },
+            "authorAttribution": {
+              "displayName": "ADW Reviews",
+              "uri": "https://www.google.com/maps/contrib/110712735211278865129/reviews",
+              "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWEnEiFsA7ZxxtX8b59DsjDyBMD8vb_zHukKaZG3JpD0D4bys8d=s128-c0x00000000-cc-rp-mo-ba4"
+            },
+            "publishTime": "2024-09-04T10:41:10.041768Z",
+            "flagContentUri": "https://www.google.com/local/review/rap/report?postId=ChdDSUhNMG9nS0VJQ0FnSUNIeHRXenpBRRAB&d=17924085&t=1",
+            "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sChdDSUhNMG9nS0VJQ0FnSUNIeHRXenpBRRAB!2m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/reviews/ChZDSUhNMG9nS0VJQ0FnSURIdi1tdEV3EAE",
+            "relativePublishTimeDescription": "2 months ago",
+            "rating": 5,
+            "text": {
+              "text": "I really appreciate the service Mr Riaan from right cars Northriding malibongwe gave me regarding my Kia picanto , their cars are spectacular and would recommend anyone looking to make their life easier to purchase a car from them",
+              "languageCode": "en"
+            },
+            "originalText": {
+              "text": "I really appreciate the service Mr Riaan from right cars Northriding malibongwe gave me regarding my Kia picanto , their cars are spectacular and would recommend anyone looking to make their life easier to purchase a car from them",
+              "languageCode": "en"
+            },
+            "authorAttribution": {
+              "displayName": "makhosazane yende",
+              "uri": "https://www.google.com/maps/contrib/102426063231284996147/reviews",
+              "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocLfktSvTYpfTojZPrWKL3xULOn-Yl6WSBQzMiLUmSxjTmcQRA=s128-c0x00000000-cc-rp-mo"
+            },
+            "publishTime": "2024-09-21T11:24:03.241920Z",
+            "flagContentUri": "https://www.google.com/local/review/rap/report?postId=ChZDSUhNMG9nS0VJQ0FnSURIdi1tdEV3EAE&d=17924085&t=1",
+            "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sChZDSUhNMG9nS0VJQ0FnSURIdi1tdEV3EAE!2m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/reviews/ChdDSUhNMG9nS0VJQ0FnSUNYNEp2LXZnRRAB",
+            "relativePublishTimeDescription": "a month ago",
+            "rating": 5,
+            "text": {
+              "text": "Arnold is very great in terms of answering all my questions and was very quick and assisted me through out the process. I’m happy to buy the car for my wife through Right cars. Recommended everyone to come and have a look wide range of cars on the floor with affordable prices.",
+              "languageCode": "en"
+            },
+            "originalText": {
+              "text": "Arnold is very great in terms of answering all my questions and was very quick and assisted me through out the process. I’m happy to buy the car for my wife through Right cars. Recommended everyone to come and have a look wide range of cars on the floor with affordable prices.",
+              "languageCode": "en"
+            },
+            "authorAttribution": {
+              "displayName": "karthik varma",
+              "uri": "https://www.google.com/maps/contrib/107983647174608420034/reviews",
+              "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWURpOf4Al-V5-tf2JTH_dDPZxCTjDW-G460IbbBxR786HUDB5o=s128-c0x00000000-cc-rp-mo"
+            },
+            "publishTime": "2024-10-12T09:39:14.347063Z",
+            "flagContentUri": "https://www.google.com/local/review/rap/report?postId=ChdDSUhNMG9nS0VJQ0FnSUNYNEp2LXZnRRAB&d=17924085&t=1",
+            "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sChdDSUhNMG9nS0VJQ0FnSUNYNEp2LXZnRRAB!2m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/reviews/ChZDSUhNMG9nS0VJQ0FnSUMzbGRmcGRREAE",
+            "relativePublishTimeDescription": "2 weeks ago",
+            "rating": 1,
+            "text": {
+              "text": "Terrible service never been treated so badly. Valdo talks to clients like they nothing , David the finance manager was the worst of them all. Will never buy a vehicle with them again. Infant we revoked our deal due to disgusting service.",
+              "languageCode": "en"
+            },
+            "originalText": {
+              "text": "Terrible service never been treated so badly. Valdo talks to clients like they nothing , David the finance manager was the worst of them all. Will never buy a vehicle with them again. Infant we revoked our deal due to disgusting service.",
+              "languageCode": "en"
+            },
+            "authorAttribution": {
+              "displayName": "Kendall Buckham",
+              "uri": "https://www.google.com/maps/contrib/104923106448891939509/reviews",
+              "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVFEYT8zoIiKqln0RmPaw04L41wIbvutVjAk_0b-zI73S00aOXw=s128-c0x00000000-cc-rp-mo-ba3"
+            },
+            "publishTime": "2024-11-07T16:51:27.302218Z",
+            "flagContentUri": "https://www.google.com/local/review/rap/report?postId=ChZDSUhNMG9nS0VJQ0FnSUMzbGRmcGRREAE&d=17924085&t=1",
+            "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sChZDSUhNMG9nS0VJQ0FnSUMzbGRmcGRREAE!2m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/reviews/ChdDSUhNMG9nS0VJQ0FnSURicTlxaDNRRRAB",
+            "relativePublishTimeDescription": "3 months ago",
+            "rating": 1,
+            "text": {
+              "text": "Terrible experience today. Absolutely no one came to assist us even though we were greeted at the gate and they could see us walking around the lot. The guy who greeted us at the gate said he was coming to assist but when we saw him again he was with other customers. Seems like they don't need the business.",
+              "languageCode": "en"
+            },
+            "originalText": {
+              "text": "Terrible experience today. Absolutely no one came to assist us even though we were greeted at the gate and they could see us walking around the lot. The guy who greeted us at the gate said he was coming to assist but when we saw him again he was with other customers. Seems like they don't need the business.",
+              "languageCode": "en"
+            },
+            "authorAttribution": {
+              "displayName": "andrew Gent",
+              "uri": "https://www.google.com/maps/contrib/105452993106810445512/reviews",
+              "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocLPd096zOst8NsCCUy446VnKbn3Yh8UUCyOGgyVAOX69vGk7Q=s128-c0x00000000-cc-rp-mo-ba3"
+            },
+            "publishTime": "2024-08-09T13:50:20.504306Z",
+            "flagContentUri": "https://www.google.com/local/review/rap/report?postId=ChdDSUhNMG9nS0VJQ0FnSURicTlxaDNRRRAB&d=17924085&t=1",
+            "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sChdDSUhNMG9nS0VJQ0FnSURicTlxaDNRRRAB!2m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          }
+        ],
+        "photos": [
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/photos/AdDdOWoKUb3WLusgdeNiaymWAgpkdYbGEBOrsFJCn7ThL56en4tjA6ZotUuJ0BYLgCJ3dN930AkMUyqnEAFbu88HQAx9jYIDHdFar94gsVEuh97Nq8EWvt_Kb5MoMo7PfqdGnx9mFeiI1IGH5wmVC5C5UqB25e6Vz83rn7V6",
+            "widthPx": 512,
+            "heightPx": 384,
+            "authorAttributions": [
+              {
+                "displayName": "RightCars",
+                "uri": "https://maps.google.com/maps/contrib/102450105568609227713",
+                "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWnh22dMcmii3Q33JxnU2Ped4Teb8DkpASRSbyfV46bc2nq3Nrp=s100-p-k-no-mo"
+              }
+            ],
+            "flagContentUri": "https://www.google.com/local/imagery/report/?cb_client=maps_api_places.places_api&image_key=!1e10!2sAF1QipO4nkhfpX8d5lNt7Dj6JyQ3G_nO0hlSxKtpROaC&hl=en-GB",
+            "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sAF1QipO4nkhfpX8d5lNt7Dj6JyQ3G_nO0hlSxKtpROaC!2e10!4m2!3m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/photos/AdDdOWpkX0XhguoXT2U3z8OGMxy1KJckWt261vHlWAYqhT2UwlsAiJf0sQwSckwaYseaDm_99cE5bq_QReW_5ZPVH6JKRucWraKg8xmeibcwY6llNPh62wIDANM5EzFxFjbgJXmlgTxixH_X9JfzXRul-c4qd1PCd9Ho7_Pr",
+            "widthPx": 4000,
+            "heightPx": 2252,
+            "authorAttributions": [
+              {
+                "displayName": "RightCars",
+                "uri": "https://maps.google.com/maps/contrib/102450105568609227713",
+                "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWnh22dMcmii3Q33JxnU2Ped4Teb8DkpASRSbyfV46bc2nq3Nrp=s100-p-k-no-mo"
+              }
+            ],
+            "flagContentUri": "https://www.google.com/local/imagery/report/?cb_client=maps_api_places.places_api&image_key=!1e10!2sAF1QipOK-2DmRMUPU8anR_qDD7DKRaHHVIPGZBsPhu27&hl=en-GB",
+            "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sAF1QipOK-2DmRMUPU8anR_qDD7DKRaHHVIPGZBsPhu27!2e10!4m2!3m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/photos/AdDdOWqzni0kl5QZ_OMsnS8ttI7fhHntQ4n525nkuPgr_s2Em2ubp9oeugtoum6dyA70L6jeIEeRgqv-dmUPYjkm2MQOiWVyAVg32YhpWhK3gNFJMI-pvYmSmP5mtDNV5oW_XKgTfRx5gGybLURL-IPtEE6hNcE1fxKfoBDF",
+            "widthPx": 3024,
+            "heightPx": 4032,
+            "authorAttributions": [
+              {
+                "displayName": "makhosazane yende",
+                "uri": "https://maps.google.com/maps/contrib/102426063231284996147",
+                "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocLfktSvTYpfTojZPrWKL3xULOn-Yl6WSBQzMiLUmSxjTmcQRA=s100-p-k-no-mo"
+              }
+            ],
+            "flagContentUri": "https://www.google.com/local/imagery/report/?cb_client=maps_api_places.places_api&image_key=!1e10!2sAF1QipOfgidRtJGoECF6UXD3TrtSTltTamCb8jboxnXn&hl=en-GB",
+            "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sAF1QipOfgidRtJGoECF6UXD3TrtSTltTamCb8jboxnXn!2e10!4m2!3m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/photos/AdDdOWovLHRpo6t47uo2ni6UED2o8QqEXiXJnEJDprbF70RWa2VY66VGg60rPq9EJwW2cUK9M_Vd8gaE7Kt-Rvw7MUouM_Rjz9KXjwqHPl3KbA_cL60rGXDKL-6qCFc1qNOHbYKYcP5y4o3YflcovjefNRkM5LFj2mo-5ok7",
+            "widthPx": 512,
+            "heightPx": 384,
+            "authorAttributions": [
+              {
+                "displayName": "RightCars",
+                "uri": "https://maps.google.com/maps/contrib/102450105568609227713",
+                "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWnh22dMcmii3Q33JxnU2Ped4Teb8DkpASRSbyfV46bc2nq3Nrp=s100-p-k-no-mo"
+              }
+            ],
+            "flagContentUri": "https://www.google.com/local/imagery/report/?cb_client=maps_api_places.places_api&image_key=!1e10!2sAF1QipNQRr2NU-6qqzpiZYZoQDlA1oOt0DdrWZweFqX2&hl=en-GB",
+            "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sAF1QipNQRr2NU-6qqzpiZYZoQDlA1oOt0DdrWZweFqX2!2e10!4m2!3m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/photos/AdDdOWqZk2m_1Pe2Q-2FmAOcdftmj9HlTm_MDt9WbmeBsiPYzxF2DWwbXosqL7wVfiGZqCR70TvV2m0sDlIS2g-Wb52JaR-fVAr79bn32QvfzqvM7EMHQgSIVfz2IC64SBXvRQ3olMYbEt75MArpXmo7XxcqMqjcbd2KLsX-",
+            "widthPx": 4608,
+            "heightPx": 3456,
+            "authorAttributions": [
+              {
+                "displayName": "Chiyaze Musenge Nyongi",
+                "uri": "https://maps.google.com/maps/contrib/101721839102191930177",
+                "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWIR09jNHLpiS82DYUhLdnEpdwxDhL5_KwQNbZ3w9BwOINUxQMF=s100-p-k-no-mo"
+              }
+            ],
+            "flagContentUri": "https://www.google.com/local/imagery/report/?cb_client=maps_api_places.places_api&image_key=!1e10!2sAF1QipPHgtNccdrmyLrA7ULeB2SsTp0whydnLnnLgbpi&hl=en-GB",
+            "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sAF1QipPHgtNccdrmyLrA7ULeB2SsTp0whydnLnnLgbpi!2e10!4m2!3m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/photos/AdDdOWq4eOn2jNhWrZAmyuGpNtS9-pa_LXBRivUxKIL417L00wMPGGere-NRJ-xxXrnFdJT2c8lXlCdqKl3Hkodyyd4cXJpJwQlAIkwAMOEmkmNkBXZX3CWQUxBDTpl29jzkZga-9ztplNZYEk0-jK61IFumbbEt1YBMfXdn",
+            "widthPx": 512,
+            "heightPx": 384,
+            "authorAttributions": [
+              {
+                "displayName": "RightCars",
+                "uri": "https://maps.google.com/maps/contrib/102450105568609227713",
+                "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWnh22dMcmii3Q33JxnU2Ped4Teb8DkpASRSbyfV46bc2nq3Nrp=s100-p-k-no-mo"
+              }
+            ],
+            "flagContentUri": "https://www.google.com/local/imagery/report/?cb_client=maps_api_places.places_api&image_key=!1e10!2sAF1QipNY3iFECML3C8kcoK4HV80ZcrRzpApQLzmJlRy-&hl=en-GB",
+            "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sAF1QipNY3iFECML3C8kcoK4HV80ZcrRzpApQLzmJlRy-!2e10!4m2!3m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/photos/AdDdOWplss1oBnp3DMD5MaQfaPFyHcY3mNPn0mpJkjhfakFM9nK3Yxvc8JnNslBmo9nFMaAuUuMH855GI7ydssGsLnzdlqXVaE8YF9QNleCeZBgyKmYRH9k4KdHkJiZLhv4y8hP3Jz3nvqS-TasiTjhr1JHpScBDSkxM0f_X",
+            "widthPx": 1440,
+            "heightPx": 810,
+            "authorAttributions": [
+              {
+                "displayName": "RightCars",
+                "uri": "https://maps.google.com/maps/contrib/102450105568609227713",
+                "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWnh22dMcmii3Q33JxnU2Ped4Teb8DkpASRSbyfV46bc2nq3Nrp=s100-p-k-no-mo"
+              }
+            ],
+            "flagContentUri": "https://www.google.com/local/imagery/report/?cb_client=maps_api_places.places_api&image_key=!1e10!2sAF1QipNWCoAMUaeGIjn8xS_u0NQFdeTQNqjEMpi5yum9&hl=en-GB",
+            "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sAF1QipNWCoAMUaeGIjn8xS_u0NQFdeTQNqjEMpi5yum9!2e10!4m2!3m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/photos/AdDdOWpggKdWF1RW2DnA-Hy9ICpRDX3cGhj2fvB82w9mS-HTKYD2WhcTTv4w10724CVI7cLT3EqQcYpMR-rs4g7fatufBdbNbC4WXbjzXtyIcC_1Iss0P9POqOhIpLSNZCXs-QRImqesKd5MvFocEXDXr7fqM1oT0tPFmA8-",
+            "widthPx": 4032,
+            "heightPx": 1960,
+            "authorAttributions": [
+              {
+                "displayName": "Danie Van heerden",
+                "uri": "https://maps.google.com/maps/contrib/107932639286755001079",
+                "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjV6BSpBVmvckTaCCmOrZw6_CLMS94M3cr_zL4_-duwM8ZvfMSRGmQ=s100-p-k-no-mo"
+              }
+            ],
+            "flagContentUri": "https://www.google.com/local/imagery/report/?cb_client=maps_api_places.places_api&image_key=!1e10!2sAF1QipMeKY-jYadVywbxooLc_jHbXO08CtsAGndIVQWK&hl=en-GB",
+            "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sAF1QipMeKY-jYadVywbxooLc_jHbXO08CtsAGndIVQWK!2e10!4m2!3m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/photos/AdDdOWqe2YaAJ_3sH0Xsn5DHh28P6CJ_9BfKzaAeU1VX2UO4t3nkkf_vwDyosbuUHas7Ey1YUXGjLIc4uNtNJxVuL-dAx3n9fbo1YUcF7LUNBc8D54lw39z3ewubeAPIQP_yRzmczA1k_IF5y-R_ilojlXIJRemv9MPwCvD6",
+            "widthPx": 4800,
+            "heightPx": 3600,
+            "authorAttributions": [
+              {
+                "displayName": "RightCars",
+                "uri": "https://maps.google.com/maps/contrib/102450105568609227713",
+                "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWnh22dMcmii3Q33JxnU2Ped4Teb8DkpASRSbyfV46bc2nq3Nrp=s100-p-k-no-mo"
+              }
+            ],
+            "flagContentUri": "https://www.google.com/local/imagery/report/?cb_client=maps_api_places.places_api&image_key=!1e10!2sAF1QipNUNHWZorWND_Twme_BC_gTOiqyeZbgNi0kc3gA&hl=en-GB",
+            "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sAF1QipNUNHWZorWND_Twme_BC_gTOiqyeZbgNi0kc3gA!2e10!4m2!3m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/photos/AdDdOWpdt2uuyxDhMGX8qogHD0Kfse3oMn_aVWA5WYIl54F3FKerwK352jxEgTIGDbVEHeTDeQha0kozt4iWIVhvYBGuQuSDzZPD2gfj6SmtuwGmeZ0zQvE_Lz0aGb_pdRObVVZpTbbMTai3sYiT4JLsvYMxkKvswDT609TH",
+            "widthPx": 4000,
+            "heightPx": 2252,
+            "authorAttributions": [
+              {
+                "displayName": "RightCars",
+                "uri": "https://maps.google.com/maps/contrib/102450105568609227713",
+                "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWnh22dMcmii3Q33JxnU2Ped4Teb8DkpASRSbyfV46bc2nq3Nrp=s100-p-k-no-mo"
+              }
+            ],
+            "flagContentUri": "https://www.google.com/local/imagery/report/?cb_client=maps_api_places.places_api&image_key=!1e10!2sAF1QipMAy_LB86Y9dJ7vdGeNEmVf5PPKERvEZX9nf6Uo&hl=en-GB",
+            "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sAF1QipMAy_LB86Y9dJ7vdGeNEmVf5PPKERvEZX9nf6Uo!2e10!4m2!3m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          }
+        ],
+        "paymentOptions": {
+          "acceptsCreditCards": true,
+          "acceptsDebitCards": true,
+          "acceptsNfc": true
+        },
+        "accessibilityOptions": {
+          "wheelchairAccessibleParking": true,
+          "wheelchairAccessibleEntrance": true
+        },
+        "addressDescriptor": {
+          "landmarks": [
+            {
+              "name": "places/ChIJpXMB7OgSlR4RPmFP99wZKl4",
+              "placeId": "ChIJpXMB7OgSlR4RPmFP99wZKl4",
+              "displayName": {
+                "text": "Boating International Johannesburg",
+                "languageCode": "en"
+              },
+              "types": [
+                "establishment",
+                "point_of_interest",
+                "store"
+              ],
+              "spatialRelationship": "BEHIND",
+              "straightLineDistanceMeters": 16.358881,
+              "travelDistanceMeters": 340.64105
+            },
+            {
+              "name": "places/ChIJCTiRO9t1lR4ROXe8OKrTaNQ",
+              "placeId": "ChIJCTiRO9t1lR4ROXe8OKrTaNQ",
+              "displayName": {
+                "text": "Mazista Tiles Pty Ltd",
+                "languageCode": "en"
+              },
+              "types": [
+                "establishment",
+                "home_goods_store",
+                "point_of_interest",
+                "store"
+              ],
+              "spatialRelationship": "AROUND_THE_CORNER",
+              "straightLineDistanceMeters": 140.5395,
+              "travelDistanceMeters": 181.75046
+            },
+            {
+              "name": "places/ChIJd67M39t1lR4RcTqfXwrL1n4",
+              "placeId": "ChIJd67M39t1lR4RcTqfXwrL1n4",
+              "displayName": {
+                "text": "Waterworld",
+                "languageCode": "en"
+              },
+              "types": [
+                "establishment",
+                "point_of_interest",
+                "store"
+              ],
+              "straightLineDistanceMeters": 176.1562,
+              "travelDistanceMeters": 418.62607
+            },
+            {
+              "name": "places/ChIJ_x353uh1lR4RN6dTOBMXhx4",
+              "placeId": "ChIJ_x353uh1lR4RN6dTOBMXhx4",
+              "displayName": {
+                "text": "DBV SPCA Randburg",
+                "languageCode": "en"
+              },
+              "types": [
+                "establishment",
+                "point_of_interest"
+              ],
+              "straightLineDistanceMeters": 398.5137,
+              "travelDistanceMeters": 1017.28503
+            },
+            {
+              "name": "places/ChIJV79SShd3lR4RyB5XC7Z46Hs",
+              "placeId": "ChIJV79SShd3lR4RyB5XC7Z46Hs",
+              "displayName": {
+                "text": "THE GAS AFFAIR (Northriding)",
+                "languageCode": "en"
+              },
+              "types": [
+                "establishment",
+                "point_of_interest"
+              ],
+              "spatialRelationship": "BESIDE",
+              "straightLineDistanceMeters": 16.358881,
+              "travelDistanceMeters": 3.4586716
+            }
+          ],
+          "areas": [
+            {
+              "name": "places/ChIJfSjl3dF1lR4R4H7zM_03Nuc",
+              "placeId": "ChIJfSjl3dF1lR4R4H7zM_03Nuc",
+              "displayName": {
+                "text": "Northriding",
+                "languageCode": "en"
+              },
+              "containment": "OUTSKIRTS"
+            },
+            {
+              "name": "places/ChIJSz80Ntl1lR4RvY-x8fDTINA",
+              "placeId": "ChIJSz80Ntl1lR4RvY-x8fDTINA",
+              "displayName": {
+                "text": "Olievenhoutpoort 196-Iq",
+                "languageCode": "en"
+              },
+              "containment": "NEAR"
+            }
+          ]
+        },
+        "googleMapsLinks": {
+          "directionsUri": "https://www.google.com/maps/dir//''/data=!4m7!4m6!1m1!4e2!1m2!1m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84!3e0",
+          "placeUri": "https://maps.google.com/?cid=3421741018524585604",
+          "writeAReviewUri": "https://www.google.com/maps/place//data=!4m3!3m2!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84!12e1",
+          "reviewsUri": "https://www.google.com/maps/place//data=!4m4!3m3!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84!9m1!1b1",
+          "photosUri": "https://www.google.com/maps/place//data=!4m3!3m2!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84!10e5"
+        }
+      }
+    ],
+    "contextualContents": [
+      {
+        "reviews": [
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/reviews/ChZDSUhNMG9nS0VJQ0FnSUQ3cGVTS0xnEAE",
+            "relativePublishTimeDescription": "3 months ago",
+            "rating": 5,
+            "text": {
+              "text": "My visit to Rightcars Park was a breeze. The variety of cars was impressive, and the staff was friendly and efficient, guiding me to the right choice without any hassle. The park is well-organized, making it easy to explore the options. I’m very satisfied with my purchase and highly recommend Rightcars Park to anyone looking for a reliable car.",
+              "languageCode": "en"
+            },
+            "originalText": {
+              "text": "My visit to Rightcars Park was a breeze. The variety of cars was impressive, and the staff was friendly and efficient, guiding me to the right choice without any hassle. The park is well-organized, making it easy to explore the options. I’m very satisfied with my purchase and highly recommend Rightcars Park to anyone looking for a reliable car.",
+              "languageCode": "en"
+            },
+            "authorAttribution": {
+              "displayName": "Jorge Mulungo",
+              "uri": "https://www.google.com/maps/contrib/115973607445493531495/reviews",
+              "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjUCP2Ad2z8EP1MZ9Q4BZ6_eh6RvaV5nTm18yEuIcTustDGXMrwCMw=s128-c-c0x00000000-cc-rp-mo-br100"
+            },
+            "publishTime": "2024-08-26T12:02:06Z",
+            "flagContentUri": "https://www.google.com/local/review/rap/report?postId=ChZDSUhNMG9nS0VJQ0FnSUQ3cGVTS0xnEAE&d=17924085&t=1",
+            "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sChZDSUhNMG9nS0VJQ0FnSUQ3cGVTS0xnEAE!2m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/reviews/ChdDSUhNMG9nS0VJQ0FnSUNEeXMzMzVnRRAB",
+            "relativePublishTimeDescription": "8 months ago",
+            "rating": 5,
+            "text": {
+              "text": "Great service I got from right cars and not forgetting Hector the salesman who is honest and advice nicely .without his advice I don't think I would have bought this car .nice service from u all team",
+              "languageCode": "en"
+            },
+            "originalText": {
+              "text": "Great service I got from right cars and not forgetting Hector the salesman who is honest and advice nicely .without his advice I don't think I would have bought this car .nice service from u all team",
+              "languageCode": "en"
+            },
+            "authorAttribution": {
+              "displayName": "tebogo rammalo",
+              "uri": "https://www.google.com/maps/contrib/106227397822133644108/reviews",
+              "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjX1wunje55uJMMiF9WLED-vAkCRYc8yc5cYNvQGHN1ImNC7gzxOeQ=s128-c-c0x00000000-cc-rp-mo-br100"
+            },
+            "publishTime": "2024-03-26T20:14:06Z",
+            "flagContentUri": "https://www.google.com/local/review/rap/report?postId=ChdDSUhNMG9nS0VJQ0FnSUNEeXMzMzVnRRAB&d=17924085&t=1",
+            "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sChdDSUhNMG9nS0VJQ0FnSUNEeXMzMzVnRRAB!2m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/reviews/ChZDSUhNMG9nS0VJQ0FnSURLMVBDaEh3EAE",
+            "relativePublishTimeDescription": "3 years ago",
+            "rating": 5,
+            "text": {
+              "text": "Bought a bakkie from them, Valdo and Barend were exeptional had a painless speedy service 2 days car was ready for collection. Thanks guys you were great. Shaun",
+              "languageCode": "en"
+            },
+            "originalText": {
+              "text": "Bought a bakkie from them, Valdo and Barend were exeptional had a painless speedy service 2 days car was ready for collection. Thanks guys you were great. Shaun",
+              "languageCode": "en"
+            },
+            "authorAttribution": {
+              "displayName": "Slick",
+              "uri": "https://www.google.com/maps/contrib/112137072553788801637/reviews",
+              "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjXimoMorO3i2SkJbRBKHXFjPp5KIVoNTspii4HyesF0nYxUfuQ=s128-c-c0x00000000-cc-rp-mo-br100"
+            },
+            "publishTime": "2021-05-01T10:40:19Z",
+            "flagContentUri": "https://www.google.com/local/review/rap/report?postId=ChZDSUhNMG9nS0VJQ0FnSURLMVBDaEh3EAE&d=17924085&t=1",
+            "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sChZDSUhNMG9nS0VJQ0FnSURLMVBDaEh3EAE!2m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          }
+        ],
+        "photos": [
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/photos/AdDdOWot3MFSegon7wvYuX1-jZU995TJUb9bDat9LuOhcaSI6i64qtDcVUwYP1BD-sNym2DefPOg2yhO42hajG1LFWxoqa7j1u2sYrzedTfrgF0d0UE-OjSO2JPA50D7A9otBkfH4tdwLsYwvTRogCMWH5HtuzT2r7Z8z1E",
+            "widthPx": 3000,
+            "heightPx": 4000,
+            "authorAttributions": [
+              {
+                "displayName": "Bhanu Pratap Choudhary",
+                "uri": "https://maps.google.com/maps/contrib/106568954077012767496",
+                "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjUlCPdfnI8rSlvQ0v6wNRwa2ASgo4fsfP1EnWV7FfaKmCJM2Xw=s100-p-k-no-mo"
+              }
+            ],
+            "flagContentUri": "https://www.google.com/local/imagery/report/?cb_client=maps_api_places&image_key=!1e10!2sAF1QipPU8ryYMoSoTgy2zPk1upfE7IzP8DK__p6UsjY&hl=en-GB",
+            "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sAF1QipPU8ryYMoSoTgy2zPk1upfE7IzP8DK__p6UsjY!2e10!4m2!3m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/photos/AdDdOWqhofdNP_UsAO_Nl-NLWfI6sR3LKdx6aSvJ_X22REWOJkA-Upxn_ANph59GhVeGT-h2a2qInMRh83rLEkrvtWu0xU05cNP4I2mRtox75ZDu_NpsNQlHD1wDsxldzp9-H_w1pM9xI79n0jETMTFyAQb1xNbjqJpqw95k",
+            "widthPx": 512,
+            "heightPx": 384,
+            "authorAttributions": [
+              {
+                "displayName": "From a Google User",
+                "uri": "https://maps.google.com/maps/contrib/102450105568609227713",
+                "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWnh22dMcmii3Q33JxnU2Ped4Teb8DkpASRSbyfV46bc2nq3Nrp=s100-p-k-no-mo"
+              }
+            ],
+            "flagContentUri": "https://www.google.com/local/imagery/report/?cb_client=maps_api_places&image_key=!1e10!2sAF1QipNeDUZshbnTukB20wGPODGzL0aieaV5l0QrhKeG&hl=en-GB",
+            "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sAF1QipNeDUZshbnTukB20wGPODGzL0aieaV5l0QrhKeG!2e10!4m2!3m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/photos/AdDdOWq0Yh4EMZ4mKmu-F9OnmjD-pOeJ10wSHlqj0VPnGHtQdSQ0w00dnHx8cz3nU4pY9lgb1OxQ4p2AANxvDYE3PBt8l1tK4TZrUGLgLa1V9-zD3eUrTEDSuJ_m70Ll_DFycVLzKbtfUrjhDALNv21EduT-8AoeHKk3ugY8",
+            "widthPx": 4800,
+            "heightPx": 3600,
+            "authorAttributions": [
+              {
+                "displayName": "From a Google User",
+                "uri": "https://maps.google.com/maps/contrib/102450105568609227713",
+                "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWnh22dMcmii3Q33JxnU2Ped4Teb8DkpASRSbyfV46bc2nq3Nrp=s100-p-k-no-mo"
+              }
+            ],
+            "flagContentUri": "https://www.google.com/local/imagery/report/?cb_client=maps_api_places&image_key=!1e10!2sAF1QipOBYIGHLiYptoGJCN-FmEVEa2GKfis3PB9nd7ks&hl=en-GB",
+            "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sAF1QipOBYIGHLiYptoGJCN-FmEVEa2GKfis3PB9nd7ks!2e10!4m2!3m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/photos/AdDdOWps2Vy-J3Z8xsRIgyz_pb5NvU06MeaG2zBI4gZqbs5oMvt7slNS7GWdzp-S61Jg15pQz4Rps5RGIxXAUYoDpT4GsKfkIAyYnWL1FSbbRKDx4kWxoEaTltvlFjd3fDpsqZx7_iLvmUSBre4ZydtKKVDdhibHCi3hxuiK",
+            "widthPx": 4800,
+            "heightPx": 3600,
+            "authorAttributions": [
+              {
+                "displayName": "From a Google User",
+                "uri": "https://maps.google.com/maps/contrib/102450105568609227713",
+                "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWnh22dMcmii3Q33JxnU2Ped4Teb8DkpASRSbyfV46bc2nq3Nrp=s100-p-k-no-mo"
+              }
+            ],
+            "flagContentUri": "https://www.google.com/local/imagery/report/?cb_client=maps_api_places&image_key=!1e10!2sAF1QipNUNHWZorWND_Twme_BC_gTOiqyeZbgNi0kc3gA&hl=en-GB",
+            "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sAF1QipNUNHWZorWND_Twme_BC_gTOiqyeZbgNi0kc3gA!2e10!4m2!3m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          },
+          {
+            "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/photos/AdDdOWqiVuxN7-A9cMsnpLm0NTA7k53oV6Dhy_jQOyvsQfag9SBcRx7V1yXpnXk6-kpfNhSFZqzjJLQfQ1_MMinD15Tswtk_fR9rkgGMWbTY6HaWJchonYJqo6h5X2Y06pVi_-OAxhLSu-R4dEE7Av31w7o8LukSF3rtlKtO",
+            "widthPx": 1280,
+            "heightPx": 719,
+            "authorAttributions": [
+              {
+                "displayName": "From a Google User",
+                "uri": "https://maps.google.com/maps/contrib/102450105568609227713",
+                "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWnh22dMcmii3Q33JxnU2Ped4Teb8DkpASRSbyfV46bc2nq3Nrp=s100-p-k-no-mo"
+              }
+            ],
+            "flagContentUri": "https://www.google.com/local/imagery/report/?cb_client=maps_api_places&image_key=!1e10!2sAF1QipP42MyU8S44ZFsJVZY1GQc8r6e_bMN85u_buPiD&hl=en-GB",
+            "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sAF1QipP42MyU8S44ZFsJVZY1GQc8r6e_bMN85u_buPiD!2e10!4m2!3m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+          }
+        ],
+        "justifications": [
+          {
+            "reviewJustification": {
+              "highlightedText": {
+                "text": "\"Thanks Themba good service, better pricing and very helpful.\""
+              },
+              "review": {
+                "name": "places/ChIJg_WboNh1lR4RhI6KwlN3fC8/reviews/ChdDSUhNMG9nS0VJQ0FnSUNLMlBMYjR3RRAB",
+                "relativePublishTimeDescription": "3 years ago",
+                "rating": 5,
+                "text": {
+                  "text": "Thanks Themba good service, better pricing and very helpful. I will be back again because nothing was to much trouble so willing to help",
+                  "languageCode": "en"
+                },
+                "originalText": {
+                  "text": "Thanks Themba good service, better pricing and very helpful. I will be back again because nothing was to much trouble so willing to help",
+                  "languageCode": "en"
+                },
+                "authorAttribution": {
+                  "displayName": "Juanita claase",
+                  "uri": "https://www.google.com/maps/contrib/116782594442465396895/reviews",
+                  "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocJyocOxDVGnjLfazP9BbqLT9mJYl4-LUdPbWYBDElb-KFdqAw=s128-c0x00000000-cc-rp-mo"
+                },
+                "publishTime": "2021-03-27T11:46:15.262364Z",
+                "flagContentUri": "https://www.google.com/local/review/rap/report?postId=ChdDSUhNMG9nS0VJQ0FnSUNLMlBMYjR3RRAB&d=17924085&t=1",
+                "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sChdDSUhNMG9nS0VJQ0FnSUNLMlBMYjR3RRAB!2m1!1s0x1e9575d8a09bf583:0x2f7c7753c28a8e84"
+              }
+            }
+          },
+          {
+            "businessAvailabilityAttributesJustification": {
+              "delivery": true
+            }
+          }
+        ]
+      }
+    ],
+    "searchUri": "https://www.google.com/maps/search/Luxury+tech+(Pty)+Ltd+T%2FA+RightCars"
+  }

@@ -1,0 +1,171 @@
+Dealerships
+
+- Vehicles
+- Motorcycles
+- Leisure
+- Commercial
+
+Jobs
+
+Property
+
+- For Sale
+- For Rent
+
+TODOS
+
+Business registration
+
+registration complete reminder
+promotion codes add to avoild payment, like IDA, or let IDA register dealerships on their behalf, and then only get SMS
+also if director is passport? will object key be the same? to be confirmed with datamanix
+
+ORGANISATION
+
+-leavePolicy
+
+//TYPES
+
+DEALERSHIPS
+- Cars & Bakkies
+- Bikes
+- Leasure
+- Commercial
+
+PROPERTY
+- For Sale
+- For Rent
+- Developments
+- Repossessed
+- Agencies & Agents
+
+JOBS
+- Job Listings
+- Job Seekers (apply with Profile not Public)
+
+GOODS
+- Appliances
+- Automotive
+- Baby & Kids
+
+list of goods categories based of takealot and gumtree
+
+RENTALS
+- Vehicles
+- Equipment 
+- Crane
+- Trucks
+- Grader
+- Compactors
+
+SERVICES === LEAVE, LATER STAGE
+- Builders
+- Steel structures
+- Roofs
+- Ceiling
+- Electricians & Solar
+- Plumbers
+- Gas
+- Kitchens
+- Painting & Waterproofing
+- Paving & Asphualt 
+- Tiling
+- CCTV, Gate & Garage motors 
+- Gate and Fence manufacture, Precast
+- Windows & Doors
+- Carport & Shadeports
+- Swimming Pools
+- IT Services
+- Logistics
+- Automotive
+- Landscaping & Garden
+- Cleaning
+- Education
+- Catering
+- Photography & Video
+- Tax & Financial
+- Health & Beauty
+- Appliance & Devices Repairs
+- Events & Weddings
+- Other
+
+Website and Digital marketing == now allowed own site that offer this
+
+CREATE CATEGORY UNDER TYPE, AND THEN TAGS
+
+https://pleper.com/index.php?do=tools&sdo=gmb_categories&go=1&lang=en&country=200&show_table=1
+
+All the tags that can be used
+
+-USE CHATGPT TO CREATE CATEGORY AND TAG IF NOT IN LIST
+
+-ON SETTINGS IN ORG, ALLOW TO ADD VEHICLES TO DO DELIVERIES AT OTHER RATES LIKE GOMES FOR EXAMPLE
+
+======================================
+AZURE DEPLOYMENT - evolution-api
+======================================
+
+- Login
+
+az login
+
+- Start
+
+az postgres flexible-server start --resource-group evolution-api --name evolutionapi
+az container start --resource-group evolution-api --name evolution-api-container
+
+- Stop
+
+az postgres flexible-server stop --resource-group evolution-api --name evolutionapi
+az container stop --resource-group evolution-api --name evolution-api-container
+
+- Status
+
+az container show --resource-group evolution-api --name evolution-api-container --query "instanceView.state"
+
+- IP Address - PORT 8080
+
+az container show --resource-group evolution-api --name evolution-api-container --query "ipAddress.ip" --output tsv
+
+API KEY = 2C9C98D7B3444C3FB9677A0AC98F3241
+
+- NOTE: WILL START UP AGAIN AFTER 7 DAYS
+
+CHATGPT - https://chatgpt.com/c/675449b6-7e00-800a-bbcc-c39053cbcbee
+
+az container create \
+  --resource-group evolution-api \
+  --name evolution-api-container \
+  --image evolutionapi.azurecr.io/evolution-api:v2.1.1 \
+  --ports 8080 \
+  --environment-variables AUTHENTICATION_API_KEY=2C9C98D7B3444C3FB9677A0AC98F3241 \
+                          DATABASE_ENABLED=true \
+                          DATABASE_PROVIDER=postgresql \
+                          DATABASE_CONNECTION_URI=postgresql://Test123:Barend123@evolutionapi.postgres.database.azure.com:5432/postgres?sslmode=require \
+                          CACHE_REDIS_ENABLED=false \
+                          CACHE_LOCAL_ENABLED=false \
+                          CONFIG_SESSION_PHONE_CLIENT="AgIzzit.co.za" \
+                          CONFIG_SESSION_PHONE_NAME="Web" \
+                          CONFIG_SESSION_PHONE_VERSION="3.2.1" \
+  --ip-address Public \
+  --cpu 1 \
+  --memory 1.5 \
+  --registry-login-server evolutionapi.azurecr.io \
+  --registry-username evolutionapi \
+  --registry-password NJVnDeBj/rgWiCnNSPmJ2Q9F3pQ/ZR5JEmhVBIgUFk+ACRDiK/8o \
+  --location southafricanorth \
+  --os-type Linux
+
+
+  PRICING
+
+  GUMTREE PROPERTY 
+
+  10 LISTINGS - 72 Hour Auto Bump Up - R499 EX VAT
+  20 LISTINGS - 72 Hour Auto Bump Up, plus 2 x 7Day Top Ad Features - R1 299 EX VAT
+  UNLIMITED LISTINGS - 72 Hour Auto Bump Ups - R1999 EX VAT
+
+  Ad types
+
+  Google shopping
+  
