@@ -38,3 +38,7 @@ next-env.d.ts
 # Large asset folders for deployment size optimization
 public/geo
 public/designs
+
+.env
+.env.*
+README.md
