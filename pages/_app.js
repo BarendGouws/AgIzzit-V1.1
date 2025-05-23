@@ -1,5 +1,4 @@
 import "../styles/globals.scss";
-import "../public/fonts/font.css";
 import { SessionProvider } from 'next-auth/react';
 import ErrorBoundary from './_error';
 import AgIzzitLayout from "@/layouts/AgIzzitLayout"

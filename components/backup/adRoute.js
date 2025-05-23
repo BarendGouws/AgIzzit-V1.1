@@ -10,17 +10,66 @@ import mongoose from 'mongoose';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { createCanvas, loadImage } from 'canvas';
+import { createCanvas, loadImage, registerFont } from 'canvas';
 import sharp from 'sharp';
+import { BlobServiceClient } from '@azure/storage-blob';
 
-// Directory creation helper
-const createDesignsDirectory = () => {
-  const designsDir = path.join(process.cwd(), 'public', 'designs');
-  if (!fs.existsSync(designsDir)) {
-    fs.mkdirSync(designsDir, { recursive: true });
-  }
-  return designsDir;
-};
+const fonts = [
+  // Family, Folder, Weights/Styles
+  { family: 'Roboto', folder: 'roboto' },
+  { family: 'Roboto Condensed', folder: 'roboto-condensed' },
+  { family: 'Roboto Mono', folder: 'roboto-mono' },
+  { family: 'Open Sans', folder: 'open-sans' },
+  { family: 'Montserrat', folder: 'montserrat' },
+  { family: 'Lato', folder: 'lato' },
+  { family: 'Cabin', folder: 'cabin' },
+  { family: 'Playfair Display', folder: 'playfair-display' },
+  { family: 'Comic Neue', folder: 'comic-neue' },
+  { family: 'Ubuntu', folder: 'ubuntu' },
+  { family: 'Archivo', folder: 'archivo' },
+  { family: 'Barlow Condensed', folder: 'barlow-condensed' },
+  { family: 'Bodoni Moda', folder: 'bodoni-moda' },
+  { family: 'Chivo', folder: 'chivo' },
+  { family: 'Almendra', folder: 'almendra' },
+];
+
+const fontVariants = [
+  { file: 'Regular.ttf' },
+  { file: 'Bold.ttf', weight: 'bold' },
+  { file: 'Italic.ttf', style: 'italic' },
+  { file: 'BoldItalic.ttf', weight: 'bold', style: 'italic' }
+];
+
+const fontDir = path.join(process.cwd(), 'public', 'fonts');
+
+fonts.forEach(font => {
+  fontVariants.forEach(variant => {
+    const filePath = path.join(fontDir, font.folder, variant.file);
+    if (fs.existsSync(filePath)) {
+      try {
+        registerFont(filePath, {
+          family: font.family,
+          ...(variant.weight && { weight: variant.weight }),
+          ...(variant.style && { style: variant.style }),
+        });
+        console.log(`Registered: ${font.family} ${variant.file}`);
+      } catch (err) {
+        console.warn(`Failed to register ${font.family} ${variant.file}: ${err.message}`);
+      }
+    }
+  });
+});
+
+const availableFonts = [
+  'Roboto',
+  'Open Sans', 
+  'Montserrat',
+  'Lato',
+  'Cabin',
+  'Playfair Display',
+  'Roboto Mono',
+  'Comic Neue'
+];
 
 // Canvas dimensions by ratio
 const getTemplateDimensions = (designSize) => {
@@ -93,13 +142,49 @@ const filterListings = async (filters, organization) => {
   }
 };
 
-// The main design/image renderer
-const generateDesignWithFilename = async (listing, template, outputPath) => {
+// Upload canvas to Azure Blob Storage
+const uploadCanvasToAzure = async (canvas) => {
+  try {
+    const buffer = canvas.toBuffer('image/png');
+    
+    // Initialize Azure Blob Service Client
+    const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_PUBLIC_URI);
+    const containerClient = blobServiceClient.getContainerClient("designs");
+    
+    // Ensure container exists
+    //await containerClient.createIfNotExists();
+
+    // Generate unique filename
+    const filename = `${uuidv4()}.png`;
+    const blockBlobClient = containerClient.getBlockBlobClient(filename);
+    
+    // Upload to Azure
+    await blockBlobClient.uploadData(buffer, {
+      blobHTTPHeaders: {
+        blobContentType: 'image/png',
+        blobCacheControl: 'public, max-age=31536000'
+      },
+      metadata: {
+        format: 'png',
+        createdAt: new Date().toISOString()
+      }
+    });
+
+    return blockBlobClient.url;
+  } catch (error) {
+    console.error('Error uploading to Azure:', error);
+    throw error;
+  }
+};
+
+// The main design/image renderer - now returns Azure URL
+const generateDesignWithAzureUpload = async (listing, template) => {
   try {
     const { width, height } = getTemplateDimensions(template.designSize);
     const canvas = createCanvas(width, height);
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = '#fff'; 
+    ctx.fillRect(0, 0, width, height);
 
     // Render from bottom (bg) to top
     const sortedLayers = [...template.layers].reverse();
@@ -136,46 +221,48 @@ const generateDesignWithFilename = async (listing, template, outputPath) => {
           const img = await loadImage(props.imageData);
           drawFabricImage(ctx, img, props);
           break;
-        }
+        }        
         case 'text': {
-          const textContent = (() => {
-            if (props.variable && listing.texts && listing.texts[props.variable]) return String(listing.texts[props.variable]);
-            if (props.text && typeof props.text === 'string') return props.text;
-            return '';
-          })();
-          if (!textContent) continue;
+          if (!props.variable || !listing[props.variable]) break;
+          let value = listing[props.variable];
 
-          const left = props.left, top = props.top;
-          const textWidth = props.width * (props.scaleX || 1), textHeight = props.height * (props.scaleY || 1);
-          const fontSize = props.fontSize || 36;
-          const color = props.color || '#000000';
-          const align = props.textAlign || 'left';
-          const angle = (props.angle || 0) * Math.PI / 180;
-          const fontFamily = props.fontFamily || 'Arial';
-          let fontStyle = '';
-          if (props.bold) fontStyle += 'bold ';
-          if (props.italic) fontStyle += 'italic ';
-          if (!fontStyle) fontStyle = 'normal ';
-
-          ctx.save();
-          ctx.translate(left, top);
-          if (angle) {
-            ctx.translate(textWidth / 2, textHeight / 2);
-            ctx.rotate(angle);
-            ctx.translate(-textWidth / 2, -textHeight / 2);
+          let textValue = '';
+          if (props.format) {
+            try {
+              const variableName = props.variable;
+              const formatFunction = new Function(variableName, `return ${props.format};`);
+              textValue = formatFunction(value);
+            } catch (err) {
+              console.error('Format eval failed:', err);
+              textValue = String(value);
+            }
+          } else {
+            textValue = String(value);
           }
 
-          let minSize = 10, maxSize = Math.max(fontSize * 1.5, 72), optimalFontSize = fontSize;
-          while (minSize <= maxSize) {
-            const testSize = Math.floor((minSize + maxSize) / 2);
-            ctx.font = `${fontStyle}${testSize}px ${fontFamily}`;
-            const lineHeight = testSize * 1.2;
-            const words = textContent.split(' ');
-            let lines = [], currentLine = words[0] || '';
+          const fontFamily = props.fontFamily && availableFonts.includes(props.fontFamily)
+            ? props.fontFamily
+            : 'Roboto';
+
+          const align = props.textAlign || 'center';
+          const lineHeightMultiplier = 1.15;
+
+          const buildFontString = (size) => {
+            let fontString = '';
+            if (props.italic) fontString += 'italic ';
+            if (props.bold) fontString += 'bold ';
+            fontString += `${size}px "${fontFamily}"`;
+            return fontString;
+          };
+
+          const wrapText = (ctx, text, fontSize, maxWidth) => {
+            ctx.font = buildFontString(fontSize);
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = words[0] || '';
             for (let i = 1; i < words.length; i++) {
-              const testLine = currentLine + ' ' + words[i];
-              const metrics = ctx.measureText(testLine);
-              if (metrics.width > textWidth - 10) {
+              const testLine = `${currentLine} ${words[i]}`;
+              if (ctx.measureText(testLine).width > maxWidth - 10) {
                 lines.push(currentLine);
                 currentLine = words[i];
               } else {
@@ -183,55 +270,76 @@ const generateDesignWithFilename = async (listing, template, outputPath) => {
               }
             }
             if (currentLine) lines.push(currentLine);
-            const totalHeight = lines.length * lineHeight;
-            if (totalHeight <= textHeight - 10) {
-              optimalFontSize = testSize;
-              minSize = testSize + 1;
+            return lines;
+          };
+
+          let minFont = 8, maxFont = 200, fontSize = minFont, finalLines = [];
+          while (minFont <= maxFont) {
+            let mid = Math.floor((minFont + maxFont) / 2);
+            let lines = wrapText(ctx, textValue, mid, props.width);
+            let totalHeight = lines.length * mid * lineHeightMultiplier;
+            if (totalHeight <= props.height) {
+              fontSize = mid;
+              finalLines = lines;
+              minFont = mid + 1;
             } else {
-              maxSize = testSize - 1;
+              maxFont = mid - 1;
             }
           }
-          ctx.font = `${fontStyle}${optimalFontSize}px ${fontFamily}`;
-          ctx.fillStyle = color;
-          const lineHeight = optimalFontSize * 1.2;
-          const words = textContent.split(' ');
-          let lines = [], currentLine = words[0] || '';
-          for (let i = 1; i < words.length; i++) {
-            const testLine = currentLine + ' ' + words[i];
-            const metrics = ctx.measureText(testLine);
-            if (metrics.width > textWidth - 10) {
-              lines.push(currentLine);
-              currentLine = words[i];
-            } else {
-              currentLine = testLine;
-            }
-          }
-          if (currentLine) lines.push(currentLine);
-          let startY = (textHeight - lines.length * lineHeight) / 2;
-          startY = Math.max(startY, 0);
-          let textX;
-          if (align === 'center') { textX = textWidth / 2; ctx.textAlign = 'center'; }
-          else if (align === 'right') { textX = textWidth - 5; ctx.textAlign = 'right'; }
-          else { textX = 5; ctx.textAlign = 'left'; }
+
+          ctx.save();
+          ctx.translate(props.left, props.top);
+          if (props.angle) ctx.rotate(props.angle * Math.PI / 180);
+
+          ctx.fillStyle = props.color || '#000000';
           ctx.textBaseline = 'top';
-          for (let i = 0; i < lines.length; i++) {
-            const y = startY + i * lineHeight;
-            ctx.fillText(lines[i], textX, y);
+          ctx.textAlign = align;
+          ctx.font = buildFontString(fontSize);
+
+          const lineHeight = fontSize * lineHeightMultiplier;
+          const totalTextHeight = finalLines.length * lineHeight;
+          let startY = Math.max((props.height - totalTextHeight) / 2, 0);
+          startY = Math.floor(startY - fontSize * 0.1); // vertical alignment correction
+
+          const textX = align === 'center'
+            ? props.width / 2
+            : align === 'right'
+            ? props.width
+            : 0;
+
+          for (let i = 0; i < finalLines.length; i++) {
+            const lineY = startY + i * lineHeight;
+            ctx.fillText(finalLines[i], textX, lineY, props.width);
+
+            if (props.underline) {
+              const textWidth = ctx.measureText(finalLines[i]).width;
+              const underlineY = lineY + fontSize + 1;
+              const underlineStartX =
+                align === 'center' ? textX - textWidth / 2
+                : align === 'right' ? textX - textWidth
+                : textX;
+              ctx.beginPath();
+              ctx.strokeStyle = props.color || '#000000';
+              ctx.lineWidth = Math.max(1, fontSize * 0.05);
+              ctx.moveTo(underlineStartX, underlineY);
+              ctx.lineTo(underlineStartX + textWidth, underlineY);
+              ctx.stroke();
+            }
           }
+
           ctx.restore();
           break;
-        }
+        }    
       }
     }
 
-    const designsDir = path.dirname(outputPath);
-    if (!fs.existsSync(designsDir)) fs.mkdirSync(designsDir, { recursive: true });
-    const buffer = canvas.toBuffer('image/png');
-    fs.writeFileSync(outputPath, buffer);
-    return true;
+    // Upload to Azure and return URL
+    const azureUrl = await uploadCanvasToAzure(canvas);
+    return { success: true, url: azureUrl };
+    
   } catch (error) {
     console.error('Error generating design:', error);
-    return false;
+    return { success: false, error: error.message };
   }
 };
 
@@ -300,19 +408,14 @@ const handler = async (req, res) => {
       }
 
       const filteredListings = await filterListings(req.body.filters || {}, org);
-      const designsDir = createDesignsDirectory();
       const inventoryItems = [];
 
       if (template && req.body.platform !== 'website') {
         for (const listing of filteredListings) {
           try {
-            const filename = `${uuidv4()}.png`;
-            const outputPath = path.join(designsDir, filename);
-            const designUrl = `/designs/${filename}`;
-            const success = await generateDesignWithFilename(listing, template, outputPath);
+            const result = await generateDesignWithAzureUpload(listing, template);
             inventoryItems.push({
-              success: success,
-              url: designUrl,
+              ...result,
               listing: listing._id,
               createdAt: new Date(),
               updatedAt: new Date()

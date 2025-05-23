@@ -10,7 +10,6 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import update from 'immutability-helper';
 import { setError, fetchAdvertisingTemplate, saveAdvertisingTemplate, deleteAdvertisingTemplate } from '@/redux/manage/slices/advertisingTemplates';
 import { useRouter } from 'next/router';
-import opentype from 'opentype.js';
 
 // Predefined text variables
 const toTitleCase = (str) => {
@@ -20,47 +19,92 @@ const toTitleCase = (str) => {
     .join(' ');
 };
 
-
-
-// Create CSS @font-face rules for loaded fonts
-const createFontFaceRules = (fontDetails) => {
-  const rules = [];
+// Dynamic font discovery from public/fonts directory
+const discoverFonts = async () => {
+  const fontMap = new Map();
   
-  fontDetails.forEach((fontInfo, familyName) => {
-    fontInfo.variants.forEach(variant => {
-      const variantFile = fontInfo.variantFiles?.[variant];
-      if (!variantFile) return;
-      
-      const fontPath = `/fonts/${fontInfo.folder}/${variantFile}`;
-      const fontWeight = variant.includes('bold') ? 'bold' : 'normal';
-      const fontStyle = variant.includes('italic') ? 'italic' : 'normal';
-      
-      rules.push(`
-        @font-face {
-          font-family: "${familyName}";
-          src: url("${fontPath}") format("truetype");
-          font-weight: ${fontWeight};
-          font-style: ${fontStyle};
-          font-display: swap;
+  try {
+    // Get list of font directories
+    const fontDirs = [
+      'almendra', 'archivo', 'barlow-condensed', 'bodoni-moda', 'cabin',
+      'chivo', 'comic-neue', 'lato', 'montserrat', 'open-sans',
+      'playfair-display', 'roboto', 'roboto-condensed', 'roboto-mono', 'ubuntu'
+    ];
+
+    for (const dir of fontDirs) {
+      const familyName = dir.split('-').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' ');
+
+      const variants = [];
+      const variantChecks = [
+        { file: 'Regular.ttf', variant: 'regular' },
+        { file: 'Bold.ttf', variant: 'bold' },
+        { file: 'Italic.ttf', variant: 'italic' },
+        { file: 'BoldItalic.ttf', variant: 'bolditalic' }
+      ];
+
+      // Check which variants exist by trying to load them
+      for (const { file, variant } of variantChecks) {
+        try {
+          const fontPath = `/fonts/${dir}/${file}`;
+          const response = await fetch(fontPath);
+          if (response.ok) {
+            variants.push(variant);
+            console.log(`✅ Found font: ${familyName} - ${variant}`);
+          }
+        } catch (error) {
+          // Font doesn't exist, skip
         }
-      `);
-    });
-  });
-  
-  return rules.join('\n');
+      }
+
+      if (variants.length > 0) {
+        fontMap.set(familyName, {
+          name: familyName,
+          folder: dir,
+          variants
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error discovering fonts:', error);
+  }
+
+  return fontMap;
 };
 
-// Apply font CSS to document
-const applyFontCSS = (fontDetails) => {
-  const existingStyle = document.getElementById('dynamic-fonts');
-  if (existingStyle) {
-    existingStyle.remove();
+// Load font using OpenType.js
+const loadFontWithOpenType = async (fontFamily, variant = 'regular') => {
+  if (!window.opentype) {
+    console.warn('OpenType.js not loaded yet');
+    return null;
   }
-  
-  const style = document.createElement('style');
-  style.id = 'dynamic-fonts';
-  style.textContent = createFontFaceRules(fontDetails);
-  document.head.appendChild(style);
+
+  try {
+    const fontFolder = fontFamily.toLowerCase().replace(/\s+/g, '-');
+    let fontFile;
+    
+    switch (variant) {
+      case 'bold':
+        fontFile = 'Bold.ttf';
+        break;
+      case 'italic':
+        fontFile = 'Italic.ttf';
+        break;
+      case 'bolditalic':
+        fontFile = 'BoldItalic.ttf';
+        break;
+      default:
+        fontFile = 'Regular.ttf';
+    }
+
+    const fontPath = `/fonts/${fontFolder}/${fontFile}`;
+    const font = await window.opentype.load(fontPath);
+    return font;
+  } catch (error) {
+    console.warn(`Could not load font ${fontFamily} ${variant}:`, error);
+    return null;
+  }
 };
 
 // Layer item component for the draggable layer list
@@ -74,9 +118,7 @@ const LayerItem = ({
   images, 
   textVariables,
   availableFonts,
-  fontVariants,
-  fontMap,
-  onForceRerender
+  fontVariants 
 }) => {
   
   const ref = useRef(null);
@@ -124,6 +166,7 @@ const LayerItem = ({
 
   const toggleFormat = (formatType) => {
     const newProps = { ...layer.properties };
+    
     if (formatType === 'bold') {
       newProps.bold = !newProps.bold;
     } else if (formatType === 'italic') {
@@ -132,22 +175,13 @@ const LayerItem = ({
       newProps.underline = !newProps.underline;
     }
     
-    // Update layer and force re-render
     onUpdateLayer(layer.id, newProps);
-    
-    // Force complete component re-render
-    if (onForceRerender) {
-      setTimeout(() => onForceRerender(), 30);
-    }
   };
 
   // Get available variants for current font
   const getCurrentFontVariants = () => {
-    const fontFamily = layer.properties?.fontFamily;
-    if (!fontFamily || !fontVariants[fontFamily]) {
-      return [];
-    }
-    return fontVariants[fontFamily];
+    const fontFamily = layer.properties?.fontFamily || 'Roboto';
+    return fontVariants[fontFamily] || ['regular'];
   };
 
   // Check if a format is available for current font
@@ -172,10 +206,10 @@ const LayerItem = ({
           <Form.Select
             size="sm"
             className="mt-2"
-            value={layer.properties.imageIndex !== null && layer.properties.imageIndex !== undefined ? layer.properties.imageIndex : ''}
+            value={layer.properties.imageIndex || ''}
             onChange={(e) => onUpdateLayer(layer.id, {
               ...layer.properties,
-              imageIndex: e.target.value !== '' ? parseInt(e.target.value) : null
+              imageIndex: parseInt(e.target.value)
             })}
           >
             <option value="">Select an image</option>
@@ -192,6 +226,10 @@ const LayerItem = ({
         
         return (
           <>
+            <style>{`
+              .font-select { font-size: 14px !important; }
+              .font-select option { padding: 8px !important; }
+            `}</style>
             <div className="mt-2">
               <Form.Select
                 size="sm"
@@ -264,59 +302,6 @@ const LayerItem = ({
               })()
               }
 
-              <Row className="g-2 mb-2">
-                <Col xs={9}>
-                  <Form.Select
-                    size="sm"
-                    value={layer.properties.fontFamily || availableFonts[0] || ''}
-                    onChange={(e) => {
-                      const newFontFamily = e.target.value;
-                      const newVariants = fontVariants[newFontFamily] || [];
-                      
-                      // Reset bold/italic if not available in new font
-                      const newProps = {
-                        ...layer.properties,
-                        fontFamily: newFontFamily
-                      };
-                      
-                      if (layer.properties.bold && !newVariants.includes('bold') && !newVariants.includes('bolditalic')) {
-                        newProps.bold = false;
-                      }
-                      
-                      if (layer.properties.italic && !newVariants.includes('italic') && !newVariants.includes('bolditalic')) {
-                        newProps.italic = false;
-                      }
-                      
-                      onUpdateLayer(layer.id, newProps);
-                    }}
-                    className="font-select"
-                    style={{ fontFamily: layer.properties.fontFamily ? `"${layer.properties.fontFamily}", sans-serif` : 'inherit' }}
-                  >
-                    {availableFonts.map((fontName) => (
-                      <option 
-                        key={fontName} 
-                        value={fontName}
-                        style={{ fontFamily: `"${fontName}", sans-serif` }}
-                      >
-                        {fontName}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Col>
-                <Col xs={3}>
-                  <Form.Control
-                    size="sm"
-                    type="color"
-                    value={layer.properties.color || '#000000'}
-                    onChange={(e) => onUpdateLayer(layer.id, {
-                      ...layer.properties,
-                      color: e.target.value
-                    })}
-                    className="h-100 w-100"
-                  />
-                </Col>
-              </Row>
-
               <ButtonGroup className="w-100 mb-2" size="sm">
                 <Button
                   type="button"
@@ -359,6 +344,54 @@ const LayerItem = ({
                     <option value="center">Center Align</option>
                     <option value="right">Right Align</option>
                   </Form.Select>
+                </Col>
+              </Row>
+
+              <Row className="g-2">
+                <Col xs={9}>
+                  <Form.Select
+                    size="sm"
+                    value={layer.properties.fontFamily || 'Roboto'}
+                    onChange={(e) => {
+                      const newFontFamily = e.target.value;
+                      const newVariants = fontVariants[newFontFamily] || ['regular'];
+                      
+                      // Reset bold/italic if not available in new font
+                      const newProps = {
+                        ...layer.properties,
+                        fontFamily: newFontFamily
+                      };
+                      
+                      if (layer.properties.bold && !newVariants.includes('bold') && !newVariants.includes('bolditalic')) {
+                        newProps.bold = false;
+                      }
+                      
+                      if (layer.properties.italic && !newVariants.includes('italic') && !newVariants.includes('bolditalic')) {
+                        newProps.italic = false;
+                      }
+                      
+                      onUpdateLayer(layer.id, newProps);
+                    }}
+                    className="font-select"
+                  >
+                    {availableFonts.map((fontName) => (
+                      <option key={fontName} value={fontName}>
+                        {fontName}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Col>
+                <Col xs={3}>
+                  <Form.Control
+                    size="sm"
+                    type="color"
+                    value={layer.properties.color}
+                    onChange={(e) => onUpdateLayer(layer.id, {
+                      ...layer.properties,
+                      color: e.target.value
+                    })}
+                    className="h-100 w-100"
+                  />
                 </Col>
               </Row>
 
@@ -427,9 +460,8 @@ const TemplateDesigner = () => {
   // Font management state
   const [availableFonts, setAvailableFonts] = useState([]);
   const [fontVariants, setFontVariants] = useState({});
-  const [fontMap, setFontMap] = useState(new Map());
-  const [fontDetails, setFontDetails] = useState(new Map());
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [loadedOpenTypeFonts, setLoadedOpenTypeFonts] = useState(new Map());
 
   const textVariables = useMemo(() => {
     if (!texts) return [];
@@ -459,188 +491,64 @@ const TemplateDesigner = () => {
     designSize: "1:1",
     layers: [],
   });
-  
-  // Force re-render state
-  const [forceRenderKey, setForceRenderKey] = useState(0);
 
-  // Load fonts using OpenType.js with enhanced API
+  // Load fonts using OpenType.js
   const loadFonts = async () => {
     try {
       console.log('Starting font discovery...');
+      const fontMap = await discoverFonts();
       
-      // First get the font details from API
-      const response = await fetch('/api/fonts/list');
-      if (!response.ok) {
-        console.error('Failed to fetch font list');
-        setFontsLoaded(true);
-        return;
-      }
-      
-      const { directories = [], fontDetails: apiDetails = {} } = await response.json();
-      
-      const fontDetailsMap = new Map();
-      const discoveredFontMap = new Map();
-      const fonts = [];
+      const fonts = Array.from(fontMap.keys());
       const variants = {};
       
-      // Process each font directory
-      for (const dir of directories) {
-        const familyName = dir.split('-').map(word => 
-          word.charAt(0).toUpperCase() + word.slice(1)
-        ).join(' ');
-        
-        const variantInfo = apiDetails[dir] || [];
-        const loadedVariants = [];
-        const loadedFonts = {};
-        const variantFiles = {};
-        
-        // Load each variant
-        for (const { file, variant } of variantInfo) {
-          try {
-            const fontPath = `/fonts/${dir}/${file}`;
-            const font = await opentype.load(fontPath);
-            
-            if (font) {
-              loadedVariants.push(variant);
-              loadedFonts[variant] = font;
-              variantFiles[variant] = file;
-              console.log(`✅ Loaded font: ${familyName} - ${variant}`);
-            }
-          } catch (error) {
-            console.warn(`Failed to load ${familyName} - ${variant}:`, error);
-          }
-        }
-        
-        // Only add font family if at least regular variant was loaded
-        if (loadedVariants.includes('regular')) {
-          fonts.push(familyName);
-          variants[familyName] = loadedVariants;
-          
-          const fontInfo = {
-            name: familyName,
-            folder: dir,
-            variants: loadedVariants,
-            fonts: loadedFonts,
-            variantFiles: variantFiles
-          };
-          
-          discoveredFontMap.set(familyName, fontInfo);
-          fontDetailsMap.set(familyName, fontInfo);
-        }
-      }
+      fontMap.forEach((fontInfo, fontName) => {
+        variants[fontName] = fontInfo.variants;
+      });
       
-      setFontMap(discoveredFontMap);
-      setFontDetails(fontDetailsMap);
       setAvailableFonts(fonts);
       setFontVariants(variants);
-      
-      // Apply CSS font faces
-      applyFontCSS(fontDetailsMap);
-      
-      // Wait a bit for CSS to be applied
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
       setFontsLoaded(true);
       
       console.log('Fonts loaded:', fonts);
       console.log('Font variants:', variants);
       
+      // Preload some common fonts
+      const commonFonts = ['Roboto', 'Open Sans', 'Montserrat'];
+      for (const fontName of commonFonts) {
+        if (fonts.includes(fontName)) {
+          const font = await loadFontWithOpenType(fontName, 'regular');
+          if (font) {
+            setLoadedOpenTypeFonts(prev => new Map(prev.set(`${fontName}-regular`, font)));
+          }
+        }
+      }
     } catch (error) {
       console.error('Error loading fonts:', error);
+      // Fallback
+      setAvailableFonts(['Roboto', 'Open Sans', 'Montserrat']);
+      setFontVariants({
+        'Roboto': ['regular', 'bold', 'italic', 'bolditalic'],
+        'Open Sans': ['regular', 'bold', 'italic', 'bolditalic'],
+        'Montserrat': ['regular', 'bold', 'italic', 'bolditalic']
+      });
       setFontsLoaded(true);
     }
   };
 
-  // Helper to calculate appropriate padding based on text properties
-  const calculateTextPadding = (fabricObject) => {
-    let basePadding = 8;
-    const isBold = fabricObject.fontWeight === 'bold';
-    const isRightAligned = fabricObject.textAlign === 'right';
+  // Get OpenType font (load if not cached)
+  const getOpenTypeFont = async (fontFamily, variant = 'regular') => {
+    const key = `${fontFamily}-${variant}`;
     
-    if (isBold) {
-      basePadding += 2;
-      if (isRightAligned) {
-        basePadding += 3;
-      }
+    if (loadedOpenTypeFonts.has(key)) {
+      return loadedOpenTypeFonts.get(key);
     }
     
-    return basePadding;
-  };
-
-  // *** UNIFIED FONT APPLICATION SYSTEM ***
-  const applyFontToFabricObject = (fabricObject, fontFamily, bold, italic, underline, color, textAlign) => {
-    if (!fabricObject || !fabricRef.current) return;
-
-    // Get the actual font family name - ensure it exists
-    const actualFontFamily = fontFamily && availableFonts.includes(fontFamily) ? fontFamily : availableFonts[0];
-    if (!actualFontFamily) return;
-
-    // Build complete font CSS family string
-    const cssFontFamily = `"${actualFontFamily}", sans-serif`;
-    
-    // Determine proper font weight and style based on available variants
-    let fontWeight = 'normal';
-    let fontStyle = 'normal';
-    
-    if (actualFontFamily && fontVariants[actualFontFamily]) {
-      const variants = fontVariants[actualFontFamily];
-      
-      // Check what's actually available and requested
-      const hasBold = variants.includes('bold');
-      const hasItalic = variants.includes('italic');
-      const hasBoldItalic = variants.includes('bolditalic');
-      
-      if (bold && italic && hasBoldItalic) {
-        fontWeight = 'bold';
-        fontStyle = 'italic';
-      } else if (bold && (hasBold || hasBoldItalic)) {
-        fontWeight = 'bold';
-        fontStyle = italic && hasItalic ? 'italic' : 'normal';
-      } else if (italic && (hasItalic || hasBoldItalic)) {
-        fontWeight = bold && hasBold ? 'bold' : 'normal';
-        fontStyle = 'italic';
-      } else {
-        // Fallback to CSS simulation if variants not available
-        fontWeight = bold ? 'bold' : 'normal';
-        fontStyle = italic ? 'italic' : 'normal';
-      }
-    } else {
-      // Fallback CSS simulation
-      fontWeight = bold ? 'bold' : 'normal';
-      fontStyle = italic ? 'italic' : 'normal';
+    const font = await loadFontWithOpenType(fontFamily, variant);
+    if (font) {
+      setLoadedOpenTypeFonts(prev => new Map(prev.set(key, font)));
     }
-
-    // Apply all font properties at once
-    const fontProperties = {
-      fontFamily: cssFontFamily,
-      fontWeight: fontWeight,
-      fontStyle: fontStyle,
-      underline: underline || false,
-      fill: color || '#000000',
-      textAlign: textAlign || 'left'
-    };
-
-    console.log('Applying font properties to canvas:', {
-      actualFontFamily,
-      bold,
-      italic,
-      fontProperties,
-      availableVariants: fontVariants[actualFontFamily]
-    });
-
-    fabricObject.set(fontProperties);
     
-    // Adjust padding based on font properties
-    const newPadding = calculateTextPadding(fabricObject);
-    fabricObject.set('padding', newPadding);
-    
-    // Clear cache to force re-render with new font properties
-    fabricObject._clearCache();
-    
-    // Force immediate render
-    if (fabricRef.current) {
-      fabricRef.current.renderAll();
-    }
+    return font;
   };
 
   const getCanvasDimensions = (ratio) => {
@@ -829,7 +737,7 @@ const TemplateDesigner = () => {
                 top: layer.properties.top,
                 scaleX: layer.properties.scaleX,
                 scaleY: layer.properties.scaleY,
-                angle: layer.properties.angle || 0,
+                angle: layer.properties.angle,
                 cornerStyle: 'circle',
                 cornerSize: 8,
                 transparentCorners: false,
@@ -875,13 +783,49 @@ const TemplateDesigner = () => {
                 : texts[variableName].value;
             }
           } else {
-            textValue = layer.properties.text || 'Select Variable';
+            textValue = layer.properties.text || '';
           }
           
           const safeTextValue = typeof textValue === 'string' ? textValue : String(textValue);
           
-          // Ensure font family is set with fallback
-          const fontFamily = layer.properties.fontFamily || availableFonts[0] || 'Open Sans';
+          // Get appropriate font variant
+          const fontName = layer.properties.fontFamily || 'Roboto';
+          let variant = 'regular';
+          if (layer.properties.bold && layer.properties.italic) {
+            variant = 'bolditalic';
+          } else if (layer.properties.bold) {
+            variant = 'bold';
+          } else if (layer.properties.italic) {
+            variant = 'italic';
+          }
+          
+          // Load the OpenType font for better rendering
+          const loadFont = async () => {
+            const openTypeFont = await getOpenTypeFont(fontName, variant);
+            return openTypeFont;
+          };
+          
+          // Use web-safe font as fallback for Fabric.js display
+          const fontFamilyMap = {
+            'Roboto': 'Arial, sans-serif',
+            'Open Sans': 'Arial, sans-serif',
+            'Montserrat': 'Arial, sans-serif',
+            'Lato': 'Arial, sans-serif',
+            'Cabin': 'Arial, sans-serif',
+            'Playfair Display': 'Times, serif',
+            'Roboto Mono': 'Courier, monospace',
+            'Comic Neue': 'Comic Sans MS, cursive',
+            'Ubuntu': 'Arial, sans-serif',
+            'Archivo': 'Arial, sans-serif',
+            'Almendra': 'Times, serif',
+            'Barlow Condensed': 'Arial Narrow, sans-serif',
+            'Bodoni Moda': 'Times, serif',
+            'Chivo': 'Arial, sans-serif',
+            'Roboto Condensed': 'Arial Narrow, sans-serif'
+          };
+          
+          const displayFont = fontFamilyMap[fontName] || 'Arial, sans-serif';
+          const textAlign = layer.properties.textAlign || 'left';
           
           const textbox = new window.fabric.Textbox(safeTextValue, {
             layerId: layer.id,
@@ -890,14 +834,15 @@ const TemplateDesigner = () => {
             width: layer.properties.width,
             height: layer.properties.height,
             fontSize: layer.properties.fontSize || 50,
-            fill: layer.properties.color || '#000000',
-            textAlign: layer.properties.textAlign || 'left',
+            fontFamily: displayFont,
+            fill: layer.properties.color,
+            textAlign: textAlign,
             originX: 'left',
             originY: 'top',
             splitByGrapheme: false,
             breakWords: true,
             lockUniScaling: true,
-            padding: 8,
+            padding: 0,
             cornerStyle: 'circle',
             cornerSize: 8,
             transparentCorners: false,
@@ -908,6 +853,8 @@ const TemplateDesigner = () => {
             hasControls: true,
             charSpacing: 0,
             lineHeight: 1.2,
+            fontWeight: layer.properties.bold ? 'bold' : 'normal',
+            fontStyle: layer.properties.italic ? 'italic' : 'normal',
             underline: layer.properties.underline,
             visible: layer.visible,
             fixedWidth: layer.properties.fixedWidth || layer.properties.width,
@@ -917,17 +864,6 @@ const TemplateDesigner = () => {
             angle: layer.properties.angle || 0,
             centeredRotation: true
           });
-
-          // Apply font using unified system - immediately, not with delay
-          applyFontToFabricObject(
-            textbox,
-            fontFamily,
-            layer.properties.bold,
-            layer.properties.italic,
-            layer.properties.underline,
-            layer.properties.color,
-            layer.properties.textAlign
-          );
         
           textbox.on('scaling', () => {
             const width = textbox.width * textbox.scaleX;
@@ -956,6 +892,9 @@ const TemplateDesigner = () => {
             fabricRef.current.add(textbox);
             fitTextToBox(textbox);
           }
+          
+          // Load the OpenType font for future server rendering
+          loadFont();
           break;
         }
         case 'image': {
@@ -964,8 +903,8 @@ const TemplateDesigner = () => {
           }
           
           const [ratioW, ratioH] = aspectRatio.split(':').map(Number);
-          const containerWidth = layer.properties.width || fabricRef.current.width * 0.3;
-          const containerHeight = layer.properties.height || (containerWidth * ratioH) / ratioW;
+          const containerWidth = fabricRef.current.width * 0.3;
+          const containerHeight = (containerWidth * ratioH) / ratioW;
         
           const rect = new window.fabric.Rect({
             layerId: layer.id,
@@ -973,9 +912,9 @@ const TemplateDesigner = () => {
             top: layer.properties.top,
             width: containerWidth,
             height: containerHeight,
-            scaleX: layer.properties.scaleX || 1,
-            scaleY: layer.properties.scaleY || 1,
-            angle: layer.properties.angle || 0,
+            scaleX: layer.properties.scaleX,
+            scaleY: layer.properties.scaleY,
+            angle: layer.properties.angle,
             fill: 'transparent',
             stroke: '#cccccc',
             strokeWidth: 1,
@@ -991,8 +930,7 @@ const TemplateDesigner = () => {
             borderColor: 'transparent',
             noScaleCache: false,
             objectCaching: false,
-            strokeUniform: true,
-            visible: layer.visible
+            strokeUniform: true
           });
         
           rect.setControlsVisibility({
@@ -1018,14 +956,10 @@ const TemplateDesigner = () => {
           if (fabricRef.current) {
             fabricRef.current.add(rect);
           
-            // Load image if imageIndex is set
             if (layer.properties.imageIndex !== null && 
                 layer.properties.imageIndex !== undefined && 
                 images[layer.properties.imageIndex]) {
-              // Delay to ensure container is fully added
-              setTimeout(() => {
-                addImageToContainer(layer.id, layer.properties.imageIndex);
-              }, 100);
+              addImageToContainer(layer.id, layer.properties.imageIndex);
             }
           }
           break;
@@ -1145,7 +1079,7 @@ const TemplateDesigner = () => {
       return;
     }
 
-    if (!images || images[imageIndex] === undefined) {
+    if (!images || !images[imageIndex]) {
       console.warn('Image not available:', { layerId, imageIndex, images });
       return;
     }
@@ -1162,7 +1096,6 @@ const TemplateDesigner = () => {
         return;
       }
       
-      // Remove old image if exists
       const oldImage = fabricRef.current.getObjects().find(
         obj => obj.type === 'image' && obj.containerId === layerId
       );
@@ -1210,15 +1143,13 @@ const TemplateDesigner = () => {
         hasBorders: false,
         lockMovementX: true,
         lockMovementY: true,
-        evented: false,
-        visible: container.visible
+        evented: false
       });
   
       if (fabricRef.current) {
         fabricRef.current.add(img);
         fabricRef.current.moveTo(img, fabricRef.current.getObjects().indexOf(container) + 1);
       
-        // Remove old event handlers
         container.off('moving');
         container.off('scaling');
         container.off('rotating');
@@ -1298,7 +1229,7 @@ const TemplateDesigner = () => {
   const validateImageSize = (img, canvasWidth, canvasHeight) => {
     const imgRatio = img.width / img.height;
     const canvasRatio = canvasWidth / canvasHeight;
-    const tolerance = 0.03;
+    const tolerance = 0.03; // 3% tolerance
 
     if (Math.abs(imgRatio - canvasRatio) <= tolerance) {
       const scaleX = canvasWidth / img.width;
@@ -1319,35 +1250,11 @@ const TemplateDesigner = () => {
     const boxWidth = textObject.fixedWidth;
     const boxHeight = textObject.fixedHeight;
     
-    // Add more padding for bold text and right alignment
-    let internalPadding = 5;
-    const isBold = textObject.fontWeight === 'bold';
-    const isRightAligned = textObject.textAlign === 'right';
-    const isCenterAligned = textObject.textAlign === 'center';
-    
-    // Add extra padding for bold text
-    if (isBold) {
-      internalPadding += 3;
-    }
-    
-    // Calculate effective width accounting for alignment and bold
-    let effectiveWidth = boxWidth - (internalPadding * 2);
-    
-    // For right-aligned bold text, add even more padding
-    if (isBold && isRightAligned) {
-      effectiveWidth -= 5;
-    }
-    
-    // For center-aligned bold text, ensure symmetrical padding
-    if (isBold && isCenterAligned) {
-      effectiveWidth -= 2;
-    }
-    
     let fontSize = 100;
     const minFontSize = 8;
     
     textObject.set({
-      width: effectiveWidth,
+      width: boxWidth,
       height: boxHeight,
       scaleX: 1,
       scaleY: 1
@@ -1356,21 +1263,17 @@ const TemplateDesigner = () => {
     let low = minFontSize;
     let high = fontSize;
   
-    // Binary search for the best font size
     while (low <= high) {
       fontSize = Math.floor((low + high) / 2);
       
       textObject.set({
         fontSize: fontSize,
-        width: effectiveWidth
+        width: boxWidth
       });
   
-      // Force text measurement update
-      textObject._clearCache();
-      
       const textHeight = textObject.calcTextHeight();
       
-      if (textHeight <= boxHeight - (internalPadding * 2)) {
+      if (textHeight <= boxHeight) {
         low = fontSize + 1;
       } else {
         high = fontSize - 1;
@@ -1379,7 +1282,6 @@ const TemplateDesigner = () => {
   
     fontSize = high;
     
-    // Final setup with proper width
     textObject.set({
       fontSize: fontSize,
       width: boxWidth,
@@ -1387,10 +1289,6 @@ const TemplateDesigner = () => {
       scaleX: 1,
       scaleY: 1
     });
-    
-    // Force final render
-    textObject._clearCache();
-    textObject.setCoords();
   
     if (textObject.layerId) {
       setTemplate(prev => ({
@@ -1479,8 +1377,7 @@ const TemplateDesigner = () => {
                   scaleX: scale,
                   scaleY: scale,
                   left: 50,
-                  top: 50,
-                  angle: 0
+                  top: 50
                 }
               };
   
@@ -1501,8 +1398,27 @@ const TemplateDesigner = () => {
           const defaultWidth = fabricRef.current.width * 0.3;
           const defaultHeight = fabricRef.current.height * 0.1;
           
-          // Use first available font - CRITICAL: Ensure layer properties match what will be displayed
-          const defaultFontFamily = availableFonts[0] || 'Open Sans';
+          // Use first available font
+          const firstFont = availableFonts[0] || 'Roboto';
+          const fontFamilyMap = {
+            'Roboto': 'Arial, sans-serif',
+            'Open Sans': 'Arial, sans-serif',
+            'Montserrat': 'Arial, sans-serif',
+            'Lato': 'Arial, sans-serif',
+            'Cabin': 'Arial, sans-serif',
+            'Playfair Display': 'Times, serif',
+            'Roboto Mono': 'Courier, monospace',
+            'Comic Neue': 'Comic Sans MS, cursive',
+            'Ubuntu': 'Arial, sans-serif',
+            'Archivo': 'Arial, sans-serif',
+            'Almendra': 'Times, serif',
+            'Barlow Condensed': 'Arial Narrow, sans-serif',
+            'Bodoni Moda': 'Times, serif',
+            'Chivo': 'Arial, sans-serif',
+            'Roboto Condensed': 'Arial Narrow, sans-serif'
+          };
+          
+          const displayFont = fontFamilyMap[firstFont] || 'Arial, sans-serif';
 
           fabricObject = new window.fabric.Textbox('Select Variable', {
             left: 50,
@@ -1511,6 +1427,7 @@ const TemplateDesigner = () => {
             height: defaultHeight,
             fontSize: 50,
             layerId,
+            fontFamily: displayFont,
             fill: '#000000',
             textAlign: 'left',
             originX: 'left', 
@@ -1518,7 +1435,7 @@ const TemplateDesigner = () => {
             splitByGrapheme: false,
             breakWords: true,
             lockUniScaling: true,
-            padding: 8,
+            padding: 0,
             cornerStyle: 'circle',
             cornerSize: 8,
             transparentCorners: false,
@@ -1529,15 +1446,14 @@ const TemplateDesigner = () => {
             hasControls: true,
             charSpacing: 0,
             lineHeight: 1.2,
+            fontWeight: 'normal',
+            fontStyle: 'normal',
             underline: false,
             scaleX: 1,
             scaleY: 1,
             angle: 0,
             centeredRotation: true
           });
-
-          // Apply default font using unified system
-          applyFontToFabricObject(fabricObject, defaultFontFamily, false, false, false, '#000000', 'left');
 
           fabricObject.set({
             fixedWidth: defaultWidth,
@@ -1572,7 +1488,7 @@ const TemplateDesigner = () => {
             variable: '',
             text: 'Select Variable',
             format: '',
-            fontFamily: defaultFontFamily, // CRITICAL: Match what's displayed
+            fontFamily: firstFont,
             color: '#000000',
             left: 50,
             top: 50,
@@ -1648,10 +1564,7 @@ const TemplateDesigner = () => {
             height: containerHeight,
             left: 50,
             top: 50,
-            imageIndex: null,
-            scaleX: 1,
-            scaleY: 1,
-            angle: 0
+            imageIndex: null
           };
           break;
   
@@ -1691,21 +1604,51 @@ const TemplateDesigner = () => {
       layers: prev.layers.map(layer => {
         if (layer.id === layerId) {
           if (layer.type === 'image' && 'imageIndex' in newProperties) {
-            // Handle image container updates
-            if (newProperties.imageIndex !== null) {
-              addImageToContainer(layerId, newProperties.imageIndex);
-            }
+            addImageToContainer(layerId, newProperties.imageIndex);
           } else if (layer.type === 'text') {
-            // Get current and new properties
-            const currentProps = layer.properties;
-            const updatedProps = { ...currentProps, ...newProperties };
-            
-            // Preserve dimensions
-            const currentWidth = fabricObject.fixedWidth || fabricObject.width;
-            const currentHeight = fabricObject.fixedHeight || fabricObject.height;
-            
             if (newProperties.variable && texts[newProperties.variable] !== undefined) {
-              // Handle variable selection
+              // Get appropriate font variant
+              const fontName = newProperties.fontFamily || layer.properties.fontFamily || 'Roboto';
+              let variant = 'regular';
+              
+              if ((newProperties.bold ?? layer.properties.bold) && (newProperties.italic ?? layer.properties.italic)) {
+                variant = 'bolditalic';
+              } else if (newProperties.bold ?? layer.properties.bold) {
+                variant = 'bold';
+              } else if (newProperties.italic ?? layer.properties.italic) {
+                variant = 'italic';
+              }
+              
+              // Load OpenType font for accurate rendering
+              const loadOpenTypeFont = async () => {
+                const openTypeFont = await getOpenTypeFont(fontName, variant);
+                if (openTypeFont) {
+                  console.log(`Loaded OpenType font: ${fontName} ${variant}`);
+                }
+              };
+              loadOpenTypeFont();
+              
+              // Use web-safe font for Fabric.js display
+              const fontFamilyMap = {
+                'Roboto': 'Arial, sans-serif',
+                'Open Sans': 'Arial, sans-serif',
+                'Montserrat': 'Arial, sans-serif',
+                'Lato': 'Arial, sans-serif',
+                'Cabin': 'Arial, sans-serif',
+                'Playfair Display': 'Times, serif',
+                'Roboto Mono': 'Courier, monospace',
+                'Comic Neue': 'Comic Sans MS, cursive',
+                'Ubuntu': 'Arial, sans-serif',
+                'Archivo': 'Arial, sans-serif',
+                'Almendra': 'Times, serif',
+                'Barlow Condensed': 'Arial Narrow, sans-serif',
+                'Bodoni Moda': 'Times, serif',
+                'Chivo': 'Arial, sans-serif',
+                'Roboto Condensed': 'Arial Narrow, sans-serif'
+              };
+              
+              const displayFont = fontFamilyMap[fontName] || 'Arial, sans-serif';
+              
               let textValue;
               const variableData = texts[newProperties.variable];
               
@@ -1734,34 +1677,109 @@ const TemplateDesigner = () => {
                 textValue = String(textValue);
               }
               
-              fabricObject.set('text', textValue);
-            }
-            
-            // Apply font changes immediately without delay
-            applyFontToFabricObject(
-              fabricObject,
-              updatedProps.fontFamily,
-              updatedProps.bold,
-              updatedProps.italic,
-              updatedProps.underline,
-              updatedProps.color,
-              updatedProps.textAlign
-            );
-            
-            // Preserve dimensions and refit text
-            fabricObject.set({
-              width: currentWidth,
-              height: currentHeight,
-              fixedWidth: currentWidth,
-              fixedHeight: currentHeight,
-              scaleX: 1,
-              scaleY: 1
-            });
-            
-            fitTextToBox(fabricObject);
-            
-            // Force render
-            if (fabricRef.current) {
+              const textStyles = {
+                text: textValue,
+                fontFamily: displayFont,
+                fill: newProperties.color || layer.properties.color,
+                fontWeight: (newProperties.bold ?? layer.properties.bold) ? 'bold' : 'normal',
+                fontStyle: (newProperties.italic ?? layer.properties.italic) ? 'italic' : 'normal',
+                underline: newProperties.underline ?? layer.properties.underline,
+                textAlign: newProperties.textAlign || layer.properties.textAlign || 'left'
+              };
+          
+              // Preserve textbox dimensions when changing formatting
+              const currentWidth = fabricObject.fixedWidth || fabricObject.width;
+              const currentHeight = fabricObject.fixedHeight || fabricObject.height;
+              
+              fabricObject.set({
+                ...textStyles,
+                width: currentWidth,
+                height: currentHeight,
+                fixedWidth: currentWidth,
+                fixedHeight: currentHeight,
+                scaleX: 1,
+                scaleY: 1
+              });
+              
+              fitTextToBox(fabricObject);
+              fabricRef.current.renderAll();
+            } else {
+              // Handle other property updates while preserving dimensions
+              const updates = { ...newProperties };
+              const currentWidth = fabricObject.fixedWidth || fabricObject.width;
+              const currentHeight = fabricObject.fixedHeight || fabricObject.height;
+              
+              if ('bold' in updates || 'italic' in updates || 'fontFamily' in updates) {
+                const fontName = updates.fontFamily || layer.properties.fontFamily || 'Roboto';
+                let variant = 'regular';
+                
+                if ((updates.bold ?? layer.properties.bold) && (updates.italic ?? layer.properties.italic)) {
+                  variant = 'bolditalic';
+                } else if (updates.bold ?? layer.properties.bold) {
+                  variant = 'bold';
+                } else if (updates.italic ?? layer.properties.italic) {
+                  variant = 'italic';
+                }
+                
+                // Load OpenType font
+                const loadOpenTypeFont = async () => {
+                  const openTypeFont = await getOpenTypeFont(fontName, variant);
+                  if (openTypeFont) {
+                    console.log(`Loaded OpenType font: ${fontName} ${variant}`);
+                  }
+                };
+                loadOpenTypeFont();
+                
+                // Update display font
+                const fontFamilyMap = {
+                  'Roboto': 'Arial, sans-serif',
+                  'Open Sans': 'Arial, sans-serif',
+                  'Montserrat': 'Arial, sans-serif',
+                  'Lato': 'Arial, sans-serif',
+                  'Cabin': 'Arial, sans-serif',
+                  'Playfair Display': 'Times, serif',
+                  'Roboto Mono': 'Courier, monospace',
+                  'Comic Neue': 'Comic Sans MS, cursive',
+                  'Ubuntu': 'Arial, sans-serif',
+                  'Archivo': 'Arial, sans-serif',
+                  'Almendra': 'Times, serif',
+                  'Barlow Condensed': 'Arial Narrow, sans-serif',
+                  'Bodoni Moda': 'Times, serif',
+                  'Chivo': 'Arial, sans-serif',
+                  'Roboto Condensed': 'Arial Narrow, sans-serif'
+                };
+                
+                const displayFont = fontFamilyMap[fontName] || 'Arial, sans-serif';
+                fabricObject.set('fontFamily', displayFont);
+              }
+              
+              if ('bold' in updates) {
+                fabricObject.set('fontWeight', updates.bold ? 'bold' : 'normal');
+              }
+              if ('italic' in updates) {
+                fabricObject.set('fontStyle', updates.italic ? 'italic' : 'normal');
+              }
+              if ('underline' in updates) {
+                fabricObject.set('underline', updates.underline);
+              }
+              if ('color' in updates) {
+                fabricObject.set('fill', updates.color);
+              }
+              if ('textAlign' in updates) {
+                fabricObject.set('textAlign', updates.textAlign);
+              }
+              
+              // Preserve dimensions and refit text
+              fabricObject.set({
+                width: currentWidth,
+                height: currentHeight,
+                fixedWidth: currentWidth,
+                fixedHeight: currentHeight,
+                scaleX: 1,
+                scaleY: 1
+              });
+              
+              fitTextToBox(fabricObject);
               fabricRef.current.renderAll();
             }
           }
@@ -1879,20 +1897,9 @@ const TemplateDesigner = () => {
               designObject.visible = !layer.visible;
               fabricRef.current.renderAll();
             }
-          } else if (layer.type === 'image') {
-            // Toggle both container and image visibility
-            const container = fabricRef.current?.getObjects().find(obj => obj.layerId === layerId);
-            const image = fabricRef.current?.getObjects().find(obj => obj.containerId === layerId);
-            if (container) {
-              container.visible = !layer.visible;
-            }
-            if (image) {
-              image.visible = !layer.visible;
-            }
-            fabricRef.current?.renderAll();
           } else {
             const objects = fabricRef.current?.getObjects().filter(obj => 
-              obj.layerId === layerId
+              obj.layerId === layerId || obj.containerId === layerId
             );
             objects.forEach(obj => {
               obj.visible = !layer.visible;
@@ -1924,53 +1931,43 @@ const TemplateDesigner = () => {
     return { isValid: true };
   };
 
-  // Get validation messages for template
-  const getValidationMessages = () => {
-    const messages = [];
-    
-    if (!template.name || template.name.trim() === '') {
-      messages.push('Template name is required');
-    }
-    
-    const hasDesignLayer = template.layers.some(layer => layer.type === 'design');
-    if (!hasDesignLayer) {
-      messages.push('Template must include a design/background image');
-    }
-    
-    const hasAdditionalLayer = template.layers.some(layer => layer.type !== 'design');
-    if (!hasAdditionalLayer && hasDesignLayer) {
-      messages.push('Template must include at least one additional layer (text, image, or picture)');
-    }
-    
-    const invalidLayers = template.layers.filter(layer => {
-      switch (layer.type) {
-        case 'design':
-          return !layer.properties?.imageData;
-        case 'picture':
-          return !layer.properties?.imageData;
-        case 'image':
-          return layer.properties?.imageIndex === null || layer.properties?.imageIndex === undefined;
-        case 'text':
-          return !layer.properties?.variable || !layer.properties?.fontFamily;
-        default:
-          return false;
-      }
-    });
-    
-    if (invalidLayers.length > 0) {
-      const layerTypes = invalidLayers.map(layer => layer.name).join(', ');
-      messages.push(`The following layers have missing required properties: ${layerTypes}`);
-    }
-    
-    return messages;
-  };
-
   const handleSaveTemplate = async () => {
     try {
-      const validationMessages = getValidationMessages();
-      
-      if (validationMessages.length > 0) {
-        dispatch(setError(validationMessages[0])); // Show first error
+      if (!template.name || template.name.trim() === '') {
+        dispatch(setError('Template name is required'));
+        return;
+      }
+  
+      const hasDesignLayer = template.layers.some(layer => layer.type === 'design');
+      if (!hasDesignLayer) {
+        dispatch(setError('Template must include a design/background image'));
+        return;
+      }
+  
+      const hasAdditionalLayer = template.layers.some(layer => layer.type !== 'design');
+      if (!hasAdditionalLayer) {
+        dispatch(setError('Template must include at least one additional layer (text, image, or picture)'));
+        return;
+      }
+  
+      const invalidLayers = template.layers.filter(layer => {
+        switch (layer.type) {
+          case 'design':
+            return !layer.properties?.imageData;
+          case 'picture':
+            return !layer.properties?.imageData;
+          case 'image':
+            return layer.properties?.imageIndex === null || layer.properties?.imageIndex === undefined;
+          case 'text':
+            return !layer.properties?.variable || !layer.properties?.fontFamily;
+          default:
+            return false;
+        }
+      });
+  
+      if (invalidLayers.length > 0) {
+        const layerTypes = invalidLayers.map(layer => layer.name).join(', ');
+        dispatch(setError(`The following layers have missing required properties: ${layerTypes}`));
         return;
       }
   
@@ -1997,9 +1994,35 @@ const TemplateDesigner = () => {
     }
   };
 
-  // Load fonts on component mount
+  // Load fonts and OpenType.js on component mount
   useEffect(() => {
-    loadFonts();
+    const loadOpenTypeScript = () => {
+      if (window.opentype) {
+        loadFonts();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js';
+      script.onload = () => {
+        console.log('OpenType.js loaded successfully');
+        loadFonts();
+      };
+      script.onerror = () => {
+        console.error('Failed to load OpenType.js');
+        // Fallback without OpenType
+        setAvailableFonts(['Roboto', 'Open Sans', 'Montserrat']);
+        setFontVariants({
+          'Roboto': ['regular', 'bold', 'italic', 'bolditalic'],
+          'Open Sans': ['regular', 'bold', 'italic', 'bolditalic'],
+          'Montserrat': ['regular', 'bold', 'italic', 'bolditalic']
+        });
+        setFontsLoaded(true);
+      };
+      document.head.appendChild(script);
+    };
+
+    loadOpenTypeScript();
   }, []);
 
   useEffect(() => { 
@@ -2022,7 +2045,6 @@ const TemplateDesigner = () => {
     }
   }, [images, texts, fontsLoaded]);
 
-  // Handle canvas object selection
   useEffect(() => {
     if (fabricRef.current) {
       fabricRef.current.on('mouse:down', (e) => {
@@ -2041,35 +2063,6 @@ const TemplateDesigner = () => {
     }
   }, [template.layers]);
 
-  // Force re-render when key changes
-  useEffect(() => {
-    if (!fabricRef.current || forceRenderKey === 0) return;
-    
-    // Re-apply fonts to all text objects
-    template.layers.forEach(layer => {
-      if (layer.type === 'text') {
-        const fabricObject = fabricRef.current.getObjects().find(obj => obj.layerId === layer.id);
-        if (fabricObject) {
-          applyFontToFabricObject(
-            fabricObject,
-            layer.properties.fontFamily,
-            layer.properties.bold,
-            layer.properties.italic,
-            layer.properties.underline,
-            layer.properties.color,
-            layer.properties.textAlign
-          );
-          fitTextToBox(fabricObject);
-        }
-      }
-    });
-    
-    if (fabricRef.current) {
-      fabricRef.current.renderAll();
-    }
-  }, [forceRenderKey]);
-
-  // Initialize canvas once fonts are loaded
   useEffect(() => {
     if (window.fabric && fontsLoaded) {
       initializeCanvas();
@@ -2126,6 +2119,9 @@ const TemplateDesigner = () => {
   const zoomOut = () => {
     setZoom(prevZoom => Math.max(prevZoom - 0.1, 0.5));
   };
+
+  console.log('Template Loaded:', template);
+  console.log('Fonts Loaded:', fontsLoaded, 'Available Fonts:', availableFonts);
 
   return (
     <StateHandler slice="advertisingTemplate">
@@ -2185,17 +2181,14 @@ const TemplateDesigner = () => {
                         </Form.Select>
                       </Form.Group>
 
-                      {!fontsLoaded ? (
+                      {!fontsLoaded && (
                         <div className="alert alert-info">
                           <i className="bi bi-info-circle me-2"></i>
                           Loading font information...
                         </div>
-                      ) : availableFonts.length === 0 ? (
-                        <div className="alert alert-warning">
-                          <i className="bi bi-exclamation-triangle me-2"></i>
-                          No fonts found in /public/fonts directory
-                        </div>
-                      ) : (
+                      )}
+
+                      {fontsLoaded && (
                         <div className="alert alert-success">
                           <i className="bi bi-check-circle me-2"></i>
                           {availableFonts.length} fonts loaded successfully
@@ -2245,7 +2238,7 @@ const TemplateDesigner = () => {
                           variant="outline-primary" 
                           onClick={() => addLayer('text')}
                           className="w-100"
-                          disabled={!fontsLoaded || availableFonts.length === 0}
+                          disabled={!fontsLoaded}
                         >
                           <i className="bi bi-type me-2"></i>
                           Add Text
@@ -2280,7 +2273,7 @@ const TemplateDesigner = () => {
                         ) : (
                           template.layers.map((layer, index) => (
                             <LayerItem
-                              key={`${layer.id}-${JSON.stringify(layer.properties)}-${forceRenderKey}`}
+                              key={`${layer.id}-${JSON.stringify(layer.properties)}`}
                               layer={layer}
                               index={index}
                               moveLayer={moveLayer}
@@ -2291,8 +2284,6 @@ const TemplateDesigner = () => {
                               textVariables={textVariables}
                               availableFonts={availableFonts}
                               fontVariants={fontVariants}
-                              fontMap={fontMap}
-                              onForceRerender={() => setForceRenderKey(prev => prev + 1)}
                             />
                           ))
                         )}
@@ -2314,26 +2305,11 @@ const TemplateDesigner = () => {
                   variant="primary" 
                   className="w-100 mt-3"
                   onClick={handleSaveTemplate}
-                  disabled={loading || !fontsLoaded}
+                  disabled={loading || !template.name || template.layers.length === 0 || !fontsLoaded || !template.layers.some(layer => layer.type === 'design')}
                 >
                 <i className="bi bi-download me-2"></i>
                 {loading ? 'Saving...' : 'Save Template'}
                 </Button>
-
-                {/* Validation Messages */}
-                {(() => {
-                  const validationMessages = getValidationMessages();
-                  return validationMessages.length > 0 && (
-                    <div className="mt-2">
-                      {validationMessages.map((message, index) => (
-                        <div key={index} className="alert alert-warning alert-sm mb-1 py-2">
-                          <i className="bi bi-exclamation-triangle me-2"></i>
-                          <small>{message}</small>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })()}
           
                 <Button 
                   variant="danger" 
@@ -2342,7 +2318,7 @@ const TemplateDesigner = () => {
                   disabled={loading}
                 >
                   <i className="bi bi-trash me-2"></i>
-                  {loading ? 'Deleting..' : 'Delete Template'}
+                  {loading ? 'Deleting...' : 'Delete Template'}
                 </Button>              
 
               </Card.Body>
@@ -2362,7 +2338,14 @@ const TemplateDesigner = () => {
                       <i className="bi bi-zoom-in"></i>
                     </Button>
                     <span>Zoom: {Math.round(zoom * 100)}%</span>
-                  </Col>                  
+                  </Col>
+                  {fontsLoaded && (
+                    <Col>
+                      <small className="text-muted">
+                        OpenType.js ready - {availableFonts.length} fonts available
+                      </small>
+                    </Col>
+                  )}
                 </Row>
               </Container>
             </div>
