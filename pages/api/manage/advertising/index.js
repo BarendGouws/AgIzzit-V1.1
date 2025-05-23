@@ -223,105 +223,89 @@ const generateDesignWithAzureUpload = async (listing, template) => {
           break;
         }        
         case 'text': {
-            if (!props.variable || !listing[props.variable]) break;
-            let value = listing[props.variable];
+          const textContent = (() => {
+            if (props.variable && listing.texts && listing.texts[props.variable]) return String(listing.texts[props.variable]);
+            if (props.text && typeof props.text === 'string') return props.text;
+            return '';
+          })();
+          if (!textContent) continue;
 
-            let textValue = '';
-            if (props.format) {
-              try {
-                const variableName = props.variable;
-                const formatFunction = new Function(variableName, `return ${props.format};`);
-                textValue = formatFunction(value);
-              } catch (err) {
-                console.error('Format eval failed:', err);
-                textValue = String(value);
-              }
-            } else {
-              textValue = String(value);
-            }
+          const left = props.left, top = props.top;
+          const textWidth = props.width * (props.scaleX || 1), textHeight = props.height * (props.scaleY || 1);
+          const fontSize = props.fontSize || 36;
+          const color = props.color || '#000000';
+          const align = props.textAlign || 'left';
+          const angle = (props.angle || 0) * Math.PI / 180;
+          const fontFamily = props.fontFamily || 'Arial';
+          let fontStyle = '';
+          if (props.bold) fontStyle += 'bold ';
+          if (props.italic) fontStyle += 'italic ';
+          if (!fontStyle) fontStyle = 'normal ';
 
-            const fontFamily = props.fontFamily && availableFonts.includes(props.fontFamily)
-              ? props.fontFamily
-              : 'Roboto';
+          ctx.save();
+          ctx.translate(left, top);
+          if (angle) {
+            ctx.translate(textWidth / 2, textHeight / 2);
+            ctx.rotate(angle);
+            ctx.translate(-textWidth / 2, -textHeight / 2);
+          }
 
-            const align = props.textAlign || 'center';
-            const lineHeightMultiplier = 1.2;
-
-            const buildFont = (size) => {
-              let style = '';
-              if (props.italic) style += 'italic ';
-              if (props.bold) style += 'bold ';
-              return `${style}${size}px "${fontFamily}"`;
-            };
-
-            const wrapText = (ctx, text, size, maxWidth) => {
-              ctx.font = buildFont(size);
-              const words = text.split(' ');
-              const lines = [];
-              let currentLine = words[0] || '';
-              for (let i = 1; i < words.length; i++) {
-                const testLine = currentLine + ' ' + words[i];
-                if (ctx.measureText(testLine).width > maxWidth - 10) {
-                  lines.push(currentLine);
-                  currentLine = words[i];
-                } else {
-                  currentLine = testLine;
-                }
-              }
-              if (currentLine) lines.push(currentLine);
-              return lines;
-            };
-
-            let minSize = 8, maxSize = 200, fontSize = minSize, finalLines = [];
-            while (minSize <= maxSize) {
-              let mid = Math.floor((minSize + maxSize) / 2);
-              let lines = wrapText(ctx, textValue, mid, props.width);
-              let totalHeight = lines.length * mid * lineHeightMultiplier;
-              if (totalHeight <= props.height) {
-                fontSize = mid;
-                finalLines = lines;
-                minSize = mid + 1;
+          let minSize = 10, maxSize = Math.max(fontSize * 1.5, 72), optimalFontSize = fontSize;
+          while (minSize <= maxSize) {
+            const testSize = Math.floor((minSize + maxSize) / 2);
+            ctx.font = `${fontStyle}${testSize}px ${fontFamily}`;
+            const lineHeight = testSize * 1.2;
+            const words = textContent.split(' ');
+            let lines = [], currentLine = words[0] || '';
+            for (let i = 1; i < words.length; i++) {
+              const testLine = currentLine + ' ' + words[i];
+              const metrics = ctx.measureText(testLine);
+              if (metrics.width > textWidth - 10) {
+                lines.push(currentLine);
+                currentLine = words[i];
               } else {
-                maxSize = mid - 1;
+                currentLine = testLine;
               }
             }
-
-            ctx.save();
-            ctx.translate(props.left, props.top);
-            if (props.angle) ctx.rotate(props.angle * Math.PI / 180);
-
-            ctx.fillStyle = props.color || '#000000';
-            ctx.textBaseline = 'top';
-            ctx.textAlign = align;
-            ctx.font = buildFont(fontSize);
-
-            const totalTextHeight = finalLines.length * fontSize * lineHeightMultiplier;
-            const startY = (props.height - totalTextHeight) / 2;
-            const textX = align === 'center' ? props.width / 2 : align === 'right' ? props.width : 0;
-
-            for (let i = 0; i < finalLines.length; i++) {
-              const lineY = startY + i * fontSize * lineHeightMultiplier;
-              ctx.fillText(finalLines[i], textX, lineY, props.width);
-
-              if (props.underline) {
-                const textWidth = ctx.measureText(finalLines[i]).width;
-                const underlineY = lineY + fontSize + 1;
-                const underlineStartX =
-                  align === 'center' ? textX - textWidth / 2
-                  : align === 'right' ? textX - textWidth
-                  : textX;
-                ctx.beginPath();
-                ctx.strokeStyle = props.color || '#000000';
-                ctx.lineWidth = Math.max(1, fontSize * 0.05);
-                ctx.moveTo(underlineStartX, underlineY);
-                ctx.lineTo(underlineStartX + textWidth, underlineY);
-                ctx.stroke();
-              }
+            if (currentLine) lines.push(currentLine);
+            const totalHeight = lines.length * lineHeight;
+            if (totalHeight <= textHeight - 10) {
+              optimalFontSize = testSize;
+              minSize = testSize + 1;
+            } else {
+              maxSize = testSize - 1;
             }
-
-            ctx.restore();
-            break;
-        }     
+          }
+          ctx.font = `${fontStyle}${optimalFontSize}px ${fontFamily}`;
+          ctx.fillStyle = color;
+          const lineHeight = optimalFontSize * 1.2;
+          const words = textContent.split(' ');
+          let lines = [], currentLine = words[0] || '';
+          for (let i = 1; i < words.length; i++) {
+            const testLine = currentLine + ' ' + words[i];
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > textWidth - 10) {
+              lines.push(currentLine);
+              currentLine = words[i];
+            } else {
+              currentLine = testLine;
+            }
+          }
+          if (currentLine) lines.push(currentLine);
+          let startY = (textHeight - lines.length * lineHeight) / 2;
+          startY = Math.max(startY, 0);
+          let textX;
+          if (align === 'center') { textX = textWidth / 2; ctx.textAlign = 'center'; }
+          else if (align === 'right') { textX = textWidth - 5; ctx.textAlign = 'right'; }
+          else { textX = 5; ctx.textAlign = 'left'; }
+          ctx.textBaseline = 'top';
+          for (let i = 0; i < lines.length; i++) {
+            const y = startY + i * lineHeight;
+            ctx.fillText(lines[i], textX, y);
+          }
+          ctx.restore();
+          break;
+        }   
       }
     }
 
