@@ -20,6 +20,8 @@ const toTitleCase = (str) => {
     .join(' ');
 };
 
+
+
 // Create CSS @font-face rules for loaded fonts
 const createFontFaceRules = (fontDetails) => {
   const rules = [];
@@ -265,41 +267,35 @@ const LayerItem = ({
               <Row className="g-2 mb-2">
                 <Col xs={9}>
                   <Form.Select
-                    size="sm"
-                    value={layer.properties.fontFamily || availableFonts[0] || ''}
-                    onChange={(e) => {
-                      const newFontFamily = e.target.value;
-                      const newVariants = fontVariants[newFontFamily] || [];
-                      
-                      // Reset bold/italic if not available in new font
-                      const newProps = {
-                        ...layer.properties,
-                        fontFamily: newFontFamily
-                      };
-                      
-                      if (layer.properties.bold && !newVariants.includes('bold') && !newVariants.includes('bolditalic')) {
-                        newProps.bold = false;
-                      }
-                      
-                      if (layer.properties.italic && !newVariants.includes('italic') && !newVariants.includes('bolditalic')) {
-                        newProps.italic = false;
-                      }
-                      
-                      onUpdateLayer(layer.id, newProps);
-                    }}
-                    className="font-select"
-                    style={{ fontFamily: layer.properties.fontFamily ? `"${layer.properties.fontFamily}", sans-serif` : 'inherit' }}
-                  >
-                    {availableFonts.map((fontName) => (
-                      <option 
-                        key={fontName} 
-                        value={fontName}
-                        style={{ fontFamily: `"${fontName}", sans-serif` }}
-                      >
-                        {fontName}
-                      </option>
-                    ))}
-                  </Form.Select>
+                      size="sm"
+                      value={layer.properties.fontFamily || availableFonts[0] || ''}
+                      onChange={(e) => {
+                        const newFontFamily = e.target.value;
+                        
+                        // Always reset all formatting when font changes
+                        const newProps = {
+                          ...layer.properties,
+                          fontFamily: newFontFamily,
+                          bold: false,      // Always reset to false
+                          italic: false,    // Always reset to false
+                          underline: false  // Always reset to false
+                        };
+                        
+                        onUpdateLayer(layer.id, newProps);
+                      }}
+                      className="font-select"
+                      style={{ fontFamily: layer.properties.fontFamily ? `"${layer.properties.fontFamily}", sans-serif` : 'inherit' }}
+                    >
+                      {availableFonts.map((fontName) => (
+                        <option 
+                          key={fontName} 
+                          value={fontName}
+                          style={{ fontFamily: `"${fontName}", sans-serif` }}
+                        >
+                          {fontName}
+                        </option>
+                      ))}
+                    </Form.Select>
                 </Col>
                 <Col xs={3}>
                   <Form.Control
@@ -463,93 +459,132 @@ const TemplateDesigner = () => {
 
   // Load fonts using OpenType.js with enhanced API
   const loadFonts = async () => {
-    try {
-      console.log('Starting font discovery...');
-      
-      // First get the font details from API
-      const response = await fetch('/api/fonts/list');
-      if (!response.ok) {
-        console.error('Failed to fetch font list');
-        setFontsLoaded(false);
-        return;
-      }
-      
-      const { directories = [], fontDetails: apiDetails = {} } = await response.json();
-      
-      const fontDetailsMap = new Map();
-      const discoveredFontMap = new Map();
-      const fonts = [];
-      const variants = {};
-      
-      // Process each font directory
-      for (const dir of directories) {
-        const familyName = dir.split('-').map(word => 
-          word.charAt(0).toUpperCase() + word.slice(1)
-        ).join(' ');
-        
-        const variantInfo = apiDetails[dir] || [];
-        const loadedVariants = [];
-        const loadedFonts = {};
-        const variantFiles = {};
-        
-        // Load each variant
-        for (const { file, variant } of variantInfo) {
-          try {
-            const fontPath = `/fonts/${dir}/${file}`;
-            const font = await opentype.load(fontPath);
-            
-            if (font) {
-              loadedVariants.push(variant);
-              loadedFonts[variant] = font;
-              variantFiles[variant] = file;
-              console.log(`✅ Loaded font: ${familyName} - ${variant}`);
-            }
-          } catch (error) {
-            console.warn(`Failed to load ${familyName} - ${variant}:`, error);
-          }
-        }
-        
-        // Only add font family if at least regular variant was loaded
-        if (loadedVariants.includes('regular')) {
-          fonts.push(familyName);
-          variants[familyName] = loadedVariants;
-          
-          const fontInfo = {
-            name: familyName,
-            folder: dir,
-            variants: loadedVariants,
-            fonts: loadedFonts,
-            variantFiles: variantFiles
-          };
-          
-          discoveredFontMap.set(familyName, fontInfo);
-          fontDetailsMap.set(familyName, fontInfo);
-        }
-      }
-      
-      setFontMap(discoveredFontMap);
-      setFontDetails(fontDetailsMap);
-      setAvailableFonts(fonts);
-      setFontVariants(variants);
-      
-      // Apply CSS font faces
-      applyFontCSS(fontDetailsMap);
-      
-      // Wait a bit for CSS to be applied
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      setFontsLoaded(true);      
-
-      setTimeout(() => setForceRenderKey(prev => prev + 1), 100);
-      
-      console.log('Fonts loaded:', fonts);
-      console.log('Font variants:', variants);
-      
-    } catch (error) {
-      console.error('Error loading fonts:', error);
-      setFontsLoaded(true);
+  try {
+    console.log('Starting font discovery...');
+    
+    // First get the font details from API
+    const response = await fetch('/api/fonts/list');
+    if (!response.ok) {
+      console.error('Failed to fetch font list');
+      setFontsLoaded(false);
+      return;
     }
-  };
+    
+    const { directories = [], fontDetails: apiDetails = {} } = await response.json();
+    
+    // Create all font loading promises
+    const allFontPromises = directories.flatMap(dir => {
+      const familyName = dir.split('-').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' ');
+      
+      const variantInfo = apiDetails[dir] || [];
+      
+      // Create promises for all variants of this font family
+      return variantInfo.map(({ file, variant }) => {
+        const fontPath = `/fonts/${dir}/${file}`;
+        
+        return opentype.load(fontPath)
+          .then(font => ({
+            success: true,
+            font,
+            variant,
+            file,
+            dir,
+            familyName
+          }))
+          .catch(error => ({
+            success: false,
+            error,
+            variant,
+            file,
+            dir,
+            familyName
+          }));
+      });
+    });
+    
+    // Load all fonts in parallel
+    console.log(`Loading ${allFontPromises.length} font variants in parallel...`);
+    const allResults = await Promise.all(allFontPromises);
+    
+    // Process results
+    const fontDetailsMap = new Map();
+    const discoveredFontMap = new Map();
+    const fonts = [];
+    const variants = {};
+    
+    // Group results by font family
+    const resultsByFamily = allResults.reduce((acc, result) => {
+      const { familyName } = result;
+      if (!acc[familyName]) {
+        acc[familyName] = [];
+      }
+      acc[familyName].push(result);
+      return acc;
+    }, {});
+    
+    // Process each font family
+    Object.entries(resultsByFamily).forEach(([familyName, familyResults]) => {
+      const loadedVariants = [];
+      const loadedFonts = {};
+      const variantFiles = {};
+      const dir = familyResults[0].dir;
+      
+      // Process each variant result
+      familyResults.forEach(result => {
+        if (result.success && result.font) {
+          loadedVariants.push(result.variant);
+          loadedFonts[result.variant] = result.font;
+          variantFiles[result.variant] = result.file;
+          console.log(`✅ Loaded font: ${familyName} - ${result.variant}`);
+        } else {
+          console.warn(`Failed to load ${familyName} - ${result.variant}:`, result.error);
+        }
+      });
+      
+      // Only add font family if at least regular variant was loaded
+      if (loadedVariants.includes('regular')) {
+        fonts.push(familyName);
+        variants[familyName] = loadedVariants;
+        
+        const fontInfo = {
+          name: familyName,
+          folder: dir,
+          variants: loadedVariants,
+          fonts: loadedFonts,
+          variantFiles: variantFiles
+        };
+        
+        discoveredFontMap.set(familyName, fontInfo);
+        fontDetailsMap.set(familyName, fontInfo);
+      }
+    });
+    
+    // Sort fonts alphabetically for consistent ordering
+    fonts.sort();
+    
+    setFontMap(discoveredFontMap);
+    setFontDetails(fontDetailsMap);
+    setAvailableFonts(fonts);
+    setFontVariants(variants);
+    
+    // Apply CSS font faces
+    applyFontCSS(fontDetailsMap);
+    
+    // Wait a bit for CSS to be applied
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    setFontsLoaded(true);
+    
+    console.log(`Fonts loaded: ${fonts.length} families`);
+    console.log('Font variants:', variants);
+    
+  } catch (error) {
+    console.error('Error loading fonts:', error);
+    setFontsLoaded(true);
+  }
+};
 
   // Helper to calculate appropriate padding based on text properties
   const calculateTextPadding = (fabricObject) => {

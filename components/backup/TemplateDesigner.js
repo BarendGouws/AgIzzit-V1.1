@@ -10,49 +10,74 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import update from 'immutability-helper';
 import { setError, fetchAdvertisingTemplate, saveAdvertisingTemplate, deleteAdvertisingTemplate } from '@/redux/manage/slices/advertisingTemplates';
 import { useRouter } from 'next/router';
-
-
+import opentype from 'opentype.js';
 
 // Predefined text variables
 const toTitleCase = (str) => {
-  // Handle camelCase
   const separated = str.replace(/([A-Z])/g, ' $1');
-  // Convert to title case
   return separated.split(' ')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 };
 
-// Font options - updated to use Fontsource fonts
-const fontOptions = [
-  { name: 'Roboto', value: 'Roboto', family: 'Roboto, sans-serif' },
-  { name: 'Open Sans', value: 'Open Sans', family: 'Open Sans, sans-serif' },
-  { name: 'Montserrat', value: 'Montserrat', family: 'Montserrat, sans-serif' },
-  { name: 'Lato', value: 'Lato', family: 'Lato, sans-serif' },
-  { name: 'Cabin', value: 'Cabin', family: 'Cabin, sans-serif' },
-  { name: 'Playfair Display', value: 'Playfair Display', family: 'Playfair Display, serif' },
-  { name: 'Roboto Mono', value: 'Roboto Mono', family: 'Roboto Mono, monospace' },
-  { name: 'Comic Neue', value: 'Comic Neue', family: 'Comic Neue, cursive' },
-  { name: 'Ubuntu', value: 'Ubuntu', family: 'Ubuntu, sans-serif' },
-  { name: 'Archivo', value: 'Archivo', family: 'Archivo, sans-serif' }
-];
 
-// Also update your server-side available fonts list
-const availableFonts = [
-  'Roboto',
-  'Open Sans',
-  'Montserrat', 
-  'Lato',
-  'Cabin',
-  'Playfair Display',
-  'Roboto Mono',
-  'Comic Neue',
-  'Ubuntu',
-  'Archivo'
-];
+
+// Create CSS @font-face rules for loaded fonts
+const createFontFaceRules = (fontDetails) => {
+  const rules = [];
+  
+  fontDetails.forEach((fontInfo, familyName) => {
+    fontInfo.variants.forEach(variant => {
+      const variantFile = fontInfo.variantFiles?.[variant];
+      if (!variantFile) return;
+      
+      const fontPath = `/fonts/${fontInfo.folder}/${variantFile}`;
+      const fontWeight = variant.includes('bold') ? 'bold' : 'normal';
+      const fontStyle = variant.includes('italic') ? 'italic' : 'normal';
+      
+      rules.push(`
+        @font-face {
+          font-family: "${familyName}";
+          src: url("${fontPath}") format("truetype");
+          font-weight: ${fontWeight};
+          font-style: ${fontStyle};
+          font-display: swap;
+        }
+      `);
+    });
+  });
+  
+  return rules.join('\n');
+};
+
+// Apply font CSS to document
+const applyFontCSS = (fontDetails) => {
+  const existingStyle = document.getElementById('dynamic-fonts');
+  if (existingStyle) {
+    existingStyle.remove();
+  }
+  
+  const style = document.createElement('style');
+  style.id = 'dynamic-fonts';
+  style.textContent = createFontFaceRules(fontDetails);
+  document.head.appendChild(style);
+};
 
 // Layer item component for the draggable layer list
-const LayerItem = ({ layer, index, moveLayer, onVisibilityToggle, onDeleteLayer, onUpdateLayer, images, textVariables }) => {
+const LayerItem = ({ 
+  layer, 
+  index, 
+  moveLayer, 
+  onVisibilityToggle, 
+  onDeleteLayer, 
+  onUpdateLayer, 
+  images, 
+  textVariables,
+  availableFonts,
+  fontVariants,
+  fontMap,
+  onForceRerender
+}) => {
   
   const ref = useRef(null);
   
@@ -69,18 +94,11 @@ const LayerItem = ({ layer, index, moveLayer, onVisibilityToggle, onDeleteLayer,
       const dragIndex = item.index;
       const hoverIndex = index;
       
-      // Don't replace items with themselves
       if (dragIndex === hoverIndex) return;
 
-      // Get rectangle on screen
       const hoverBoundingRect = ref.current?.getBoundingClientRect();
-      
-      // Get vertical middle
       const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-      
-      // Get mouse position
       const clientOffset = monitor.getClientOffset();
-
       const hoverClientY = clientOffset.y - hoverBoundingRect.top;
 
       if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
@@ -104,10 +122,8 @@ const LayerItem = ({ layer, index, moveLayer, onVisibilityToggle, onDeleteLayer,
     }),
   });
 
-  // Add the toggleFormat function here to fix the issue
   const toggleFormat = (formatType) => {
     const newProps = { ...layer.properties };
-    
     if (formatType === 'bold') {
       newProps.bold = !newProps.bold;
     } else if (formatType === 'italic') {
@@ -116,7 +132,35 @@ const LayerItem = ({ layer, index, moveLayer, onVisibilityToggle, onDeleteLayer,
       newProps.underline = !newProps.underline;
     }
     
+    // Update layer and force re-render
     onUpdateLayer(layer.id, newProps);
+    
+    // Force complete component re-render
+    if (onForceRerender) {
+      setTimeout(() => onForceRerender(), 30);
+    }
+  };
+
+  // Get available variants for current font
+  const getCurrentFontVariants = () => {
+    const fontFamily = layer.properties?.fontFamily;
+    if (!fontFamily || !fontVariants[fontFamily]) {
+      return [];
+    }
+    return fontVariants[fontFamily];
+  };
+
+  // Check if a format is available for current font
+  const isFormatAvailable = (format) => {
+    const variants = getCurrentFontVariants();
+    switch (format) {
+      case 'bold':
+        return variants.includes('bold') || variants.includes('bolditalic');
+      case 'italic':
+        return variants.includes('italic') || variants.includes('bolditalic');
+      default:
+        return true;
+    }
   };
 
   drag(drop(ref));
@@ -128,10 +172,10 @@ const LayerItem = ({ layer, index, moveLayer, onVisibilityToggle, onDeleteLayer,
           <Form.Select
             size="sm"
             className="mt-2"
-            value={layer.properties.imageIndex || ''}
+            value={layer.properties.imageIndex !== null && layer.properties.imageIndex !== undefined ? layer.properties.imageIndex : ''}
             onChange={(e) => onUpdateLayer(layer.id, {
               ...layer.properties,
-              imageIndex: parseInt(e.target.value)
+              imageIndex: e.target.value !== '' ? parseInt(e.target.value) : null
             })}
           >
             <option value="">Select an image</option>
@@ -140,171 +184,194 @@ const LayerItem = ({ layer, index, moveLayer, onVisibilityToggle, onDeleteLayer,
             ))}
           </Form.Select>
         );
-        case 'text':
-          return (
-            <>
-              <style>{`
-                .font-select { font-size: 14px !important; }
-                .font-select option { padding: 8px !important; }
-              `}</style>
-              <div className="mt-2">
-                <Form.Select
-                  size="sm"
-                  className="mb-2"
-                  value={layer.properties.variable || ''}
-                  onChange={(e) => {
-                    const variableName = e.target.value;
-                    const variableData = textVariables.find(v => v.name === variableName);
-                    const newProps = {
+        
+      case 'text':
+        const currentFontVariants = getCurrentFontVariants();
+        const canBold = isFormatAvailable('bold');
+        const canItalic = isFormatAvailable('italic');
+        
+        return (
+          <>
+            <div className="mt-2">
+              <Form.Select
+                size="sm"
+                className="mb-2"
+                value={layer.properties.variable || ''}
+                onChange={(e) => {
+                  const variableName = e.target.value;
+                  const variableData = textVariables.find(v => v.name === variableName);
+                  const newProps = {
+                    ...layer.properties,
+                    variable: variableName,
+                    originalWidth: layer.properties.width,
+                    originalHeight: layer.properties.height,
+                    originalScaleX: layer.properties.scaleX,
+                    originalScaleY: layer.properties.scaleY
+                  };
+                  
+                  if (variableName && variableData?.formatting?.length === 1) {
+                    newProps.format = variableData.formatting[0].format;
+                  } else if (variableName && variableData?.formatting?.length > 1) {
+                    newProps.format = variableData.formatting[0].format;
+                  } else {
+                    newProps.format = '';
+                  }
+                  
+                  onUpdateLayer(layer.id, newProps);
+                }}
+              >
+                <option value="">Select variable</option>
+                {textVariables.map((variable) => (
+                  <option key={variable.name} value={variable.name}>
+                    {variable.label}
+                  </option>
+                ))}
+              </Form.Select>
+              
+              {layer.properties.variable && 
+              (() => {
+                const variableData = textVariables.find(v => v.name === layer.properties.variable);
+                return variableData?.formatting?.length > 1 && (
+                  <Form.Select
+                    size="sm"
+                    className="mb-2"
+                    value={layer.properties.format || ''}
+                    onChange={(e) => {
+                      onUpdateLayer(layer.id, {
+                        ...layer.properties,
+                        format: e.target.value
+                      });
+                    }}
+                  >
+                    {variableData.formatting.map((format, idx) => (
+                      <option key={idx} value={format.format}>
+                        {format.result}
+                      </option>
+                    ))}
+                  </Form.Select>
+                );
+              })()
+              }
+              
+              {layer.properties.variable && 
+              (() => {
+                const variableData = textVariables.find(v => v.name === layer.properties.variable);
+                return variableData?.formatting?.length === 1 && (
+                  <div className="mb-2 small text-muted">
+                    Format: {variableData.formatting[0].result}
+                  </div>
+                );
+              })()
+              }
+
+              <Row className="g-2 mb-2">
+                <Col xs={9}>
+                  <Form.Select
+                    size="sm"
+                    value={layer.properties.fontFamily || availableFonts[0] || ''}
+                    onChange={(e) => {
+                      const newFontFamily = e.target.value;
+                      const newVariants = fontVariants[newFontFamily] || [];
+                      
+                      // Reset bold/italic if not available in new font
+                      const newProps = {
+                        ...layer.properties,
+                        fontFamily: newFontFamily
+                      };
+                      
+                      if (layer.properties.bold && !newVariants.includes('bold') && !newVariants.includes('bolditalic')) {
+                        newProps.bold = false;
+                      }
+                      
+                      if (layer.properties.italic && !newVariants.includes('italic') && !newVariants.includes('bolditalic')) {
+                        newProps.italic = false;
+                      }
+                      
+                      onUpdateLayer(layer.id, newProps);
+                    }}
+                    className="font-select"
+                    style={{ fontFamily: layer.properties.fontFamily ? `"${layer.properties.fontFamily}", sans-serif` : 'inherit' }}
+                  >
+                    {availableFonts.map((fontName) => (
+                      <option 
+                        key={fontName} 
+                        value={fontName}
+                        style={{ fontFamily: `"${fontName}", sans-serif` }}
+                      >
+                        {fontName}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Col>
+                <Col xs={3}>
+                  <Form.Control
+                    size="sm"
+                    type="color"
+                    value={layer.properties.color || '#000000'}
+                    onChange={(e) => onUpdateLayer(layer.id, {
                       ...layer.properties,
-                      variable: variableName,
-                      originalWidth: layer.properties.width,
-                      originalHeight: layer.properties.height,
-                      originalScaleX: layer.properties.scaleX,
-                      originalScaleY: layer.properties.scaleY
-                    };
-                    
-                    // Auto-select first format if there's only one
-                    if (variableName && variableData?.formatting?.length === 1) {
-                      newProps.format = variableData.formatting[0].format;
-                    } else if (variableName && variableData?.formatting?.length > 1) {
-                      // When multiple formats, default to first but let user choose
-                      newProps.format = variableData.formatting[0].format;
-                    } else {
-                      newProps.format = '';
-                    }
-                    
-                    onUpdateLayer(layer.id, newProps);
-                  }}
+                      color: e.target.value
+                    })}
+                    className="h-100 w-100"
+                  />
+                </Col>
+              </Row>
+
+              <ButtonGroup className="w-100 mb-2" size="sm">
+                <Button
+                  type="button"
+                  variant={layer.properties.bold ? "primary" : "outline-primary"}
+                  onClick={() => toggleFormat('bold')}
+                  disabled={!canBold}
+                  title={!canBold ? "Bold not available for this font" : ""}
                 >
-                  <option value="">Select variable</option>
-                  {textVariables.map((variable) => (
-                    <option key={variable.name} value={variable.name}>
-                      {variable.label}
-                    </option>
-                  ))}
-                </Form.Select>
-                
-                {/* Show format options dropdown if multiple formats are available */}
-                {layer.properties.variable && 
-                (() => {
-                  const variableData = textVariables.find(v => v.name === layer.properties.variable);
-                  return variableData?.formatting?.length > 1 && (
-                    <Form.Select
-                      size="sm"
-                      className="mb-2"
-                      value={layer.properties.format || ''}
-                      onChange={(e) => {
-                        onUpdateLayer(layer.id, {
-                          ...layer.properties,
-                          format: e.target.value
-                        });
-                      }}
-                    >
-                      {variableData.formatting.map((format, idx) => (
-                        <option key={idx} value={format.format}>
-                          {format.result}
-                        </option>
-                      ))}
-                    </Form.Select>
-                  );
-                })()
-                }
-                
-                {/* If only one format is available, show it as text */}
-                {layer.properties.variable && 
-                (() => {
-                  const variableData = textVariables.find(v => v.name === layer.properties.variable);
-                  return variableData?.formatting?.length === 1 && (
-                    <div className="mb-2 small text-muted">
-                      Format: {variableData.formatting[0].result}
-                    </div>
-                  );
-                })()
-                }
+                  <i className="bi bi-type-bold"></i>
+                </Button>
+                <Button
+                  type="button"
+                  variant={layer.properties.italic ? "primary" : "outline-primary"}
+                  onClick={() => toggleFormat('italic')}
+                  disabled={!canItalic}
+                  title={!canItalic ? "Italic not available for this font" : ""}
+                >
+                  <i className="bi bi-type-italic"></i>
+                </Button>
+                <Button
+                  type="button"
+                  variant={layer.properties.underline ? "primary" : "outline-primary"}
+                  onClick={() => toggleFormat('underline')}
+                >
+                  <i className="bi bi-type-underline"></i>
+                </Button>
+              </ButtonGroup>
+              
+              <Row className="g-2 mb-2">
+                <Col>
+                  <Form.Select 
+                    size="sm"
+                    value={layer.properties.textAlign || 'left'}
+                    onChange={(e) => onUpdateLayer(layer.id, {
+                      ...layer.properties,
+                      textAlign: e.target.value
+                    })}
+                  >
+                    <option value="left">Left Align</option>
+                    <option value="center">Center Align</option>
+                    <option value="right">Right Align</option>
+                  </Form.Select>
+                </Col>
+              </Row>
 
-                <ButtonGroup className="w-100 mb-2" size="sm">
-                  <Button
-                    type="button"
-                    variant={layer.properties.bold ? "primary" : "outline-primary"}
-                    onClick={() => toggleFormat('bold')}
-                  >
-                    <i className="bi bi-type-bold"></i>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={layer.properties.italic ? "primary" : "outline-primary"}
-                    onClick={() => toggleFormat('italic')}
-                  >
-                    <i className="bi bi-type-italic"></i>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={layer.properties.underline ? "primary" : "outline-primary"}
-                    onClick={() => toggleFormat('underline')}
-                  >
-                    <i className="bi bi-type-underline"></i>
-                  </Button>
-                </ButtonGroup>
-                
-                <Row className="g-2 mb-2">
-                  <Col>
-                    <Form.Select 
-                      size="sm"
-                      value={layer.properties.textAlign || 'left'}
-                      onChange={(e) => onUpdateLayer(layer.id, {
-                        ...layer.properties,
-                        textAlign: e.target.value
-                      })}
-                    >
-                      <option value="left">Left Align</option>
-                      <option value="center">Center Align</option>
-                      <option value="right">Right Align</option>
-                    </Form.Select>
-                  </Col>
-                </Row>
-
-                <Row className="g-2">
-                  <Col xs={9}>
-                    <Form.Select
-                      size="sm"
-                      value={layer.properties.fontFamily || 'Roboto'}
-                      onChange={(e) => onUpdateLayer(layer.id, {
-                        ...layer.properties,
-                        fontFamily: e.target.value
-                      })}
-                      className="font-select"
-                      style={{ 
-                        fontFamily: fontOptions.find(f => f.value === layer.properties.fontFamily)?.family || 'Roboto, sans-serif' 
-                      }}
-                    >
-                      {fontOptions.map((font) => (
-                        <option 
-                          key={font.value} 
-                          value={font.value}
-                          style={{ fontFamily: font.family }}
-                        >
-                          {font.name}
-                        </option>
-                      ))}
-                    </Form.Select>
-                  </Col>
-                  <Col xs={3}>
-                    <Form.Control
-                      size="sm"
-                      type="color"
-                      value={layer.properties.color}
-                      onChange={(e) => onUpdateLayer(layer.id, {
-                        ...layer.properties,
-                        color: e.target.value
-                      })}
-                      className="h-100 w-100"
-                    />
-                  </Col>
-                </Row>
-              </div>
-            </>
-          );
+              {currentFontVariants.length > 0 && (
+                <div className="mt-2">
+                  <small className="text-muted">
+                    Available: {currentFontVariants.join(', ')}
+                  </small>
+                </div>
+              )}
+            </div>
+          </>
+        );
       default:
         return null;
     }
@@ -357,6 +424,13 @@ const TemplateDesigner = () => {
 
   const { aspectRatio, images = [], texts = {}, template: reduxTemplate, loading } = useSelector((state) => state.advertisingTemplate);
 
+  // Font management state
+  const [availableFonts, setAvailableFonts] = useState([]);
+  const [fontVariants, setFontVariants] = useState({});
+  const [fontMap, setFontMap] = useState(new Map());
+  const [fontDetails, setFontDetails] = useState(new Map());
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
   const textVariables = useMemo(() => {
     if (!texts) return [];
     return Object.keys(texts).map(key => {
@@ -385,9 +459,232 @@ const TemplateDesigner = () => {
     designSize: "1:1",
     layers: [],
   });
+  
+  // Force re-render state
+  const [forceRenderKey, setForceRenderKey] = useState(0);
+
+  // Load fonts using OpenType.js with enhanced API
+  const loadFonts = async () => {
+  try {
+    console.log('Starting font discovery...');
+    
+    // First get the font details from API
+    const response = await fetch('/api/fonts/list');
+    if (!response.ok) {
+      console.error('Failed to fetch font list');
+      setFontsLoaded(false);
+      return;
+    }
+    
+    const { directories = [], fontDetails: apiDetails = {} } = await response.json();
+    
+    // Create all font loading promises
+    const allFontPromises = directories.flatMap(dir => {
+      const familyName = dir.split('-').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' ');
+      
+      const variantInfo = apiDetails[dir] || [];
+      
+      // Create promises for all variants of this font family
+      return variantInfo.map(({ file, variant }) => {
+        const fontPath = `/fonts/${dir}/${file}`;
+        
+        return opentype.load(fontPath)
+          .then(font => ({
+            success: true,
+            font,
+            variant,
+            file,
+            dir,
+            familyName
+          }))
+          .catch(error => ({
+            success: false,
+            error,
+            variant,
+            file,
+            dir,
+            familyName
+          }));
+      });
+    });
+    
+    // Load all fonts in parallel
+    console.log(`Loading ${allFontPromises.length} font variants in parallel...`);
+    const allResults = await Promise.all(allFontPromises);
+    
+    // Process results
+    const fontDetailsMap = new Map();
+    const discoveredFontMap = new Map();
+    const fonts = [];
+    const variants = {};
+    
+    // Group results by font family
+    const resultsByFamily = allResults.reduce((acc, result) => {
+      const { familyName } = result;
+      if (!acc[familyName]) {
+        acc[familyName] = [];
+      }
+      acc[familyName].push(result);
+      return acc;
+    }, {});
+    
+    // Process each font family
+    Object.entries(resultsByFamily).forEach(([familyName, familyResults]) => {
+      const loadedVariants = [];
+      const loadedFonts = {};
+      const variantFiles = {};
+      const dir = familyResults[0].dir;
+      
+      // Process each variant result
+      familyResults.forEach(result => {
+        if (result.success && result.font) {
+          loadedVariants.push(result.variant);
+          loadedFonts[result.variant] = result.font;
+          variantFiles[result.variant] = result.file;
+          console.log(`✅ Loaded font: ${familyName} - ${result.variant}`);
+        } else {
+          console.warn(`Failed to load ${familyName} - ${result.variant}:`, result.error);
+        }
+      });
+      
+      // Only add font family if at least regular variant was loaded
+      if (loadedVariants.includes('regular')) {
+        fonts.push(familyName);
+        variants[familyName] = loadedVariants;
+        
+        const fontInfo = {
+          name: familyName,
+          folder: dir,
+          variants: loadedVariants,
+          fonts: loadedFonts,
+          variantFiles: variantFiles
+        };
+        
+        discoveredFontMap.set(familyName, fontInfo);
+        fontDetailsMap.set(familyName, fontInfo);
+      }
+    });
+    
+    // Sort fonts alphabetically for consistent ordering
+    fonts.sort();
+    
+    setFontMap(discoveredFontMap);
+    setFontDetails(fontDetailsMap);
+    setAvailableFonts(fonts);
+    setFontVariants(variants);
+    
+    // Apply CSS font faces
+    applyFontCSS(fontDetailsMap);
+    
+    // Wait a bit for CSS to be applied
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    setFontsLoaded(true);
+    
+    console.log(`Fonts loaded: ${fonts.length} families`);
+    console.log('Font variants:', variants);
+    
+  } catch (error) {
+    console.error('Error loading fonts:', error);
+    setFontsLoaded(true);
+  }
+};
+
+  // Helper to calculate appropriate padding based on text properties
+  const calculateTextPadding = (fabricObject) => {
+    let basePadding = 8;
+    const isBold = fabricObject.fontWeight === 'bold';
+    const isRightAligned = fabricObject.textAlign === 'right';
+    
+    if (isBold) {
+      basePadding += 2;
+      if (isRightAligned) {
+        basePadding += 3;
+      }
+    }
+    
+    return basePadding;
+  };
+
+  // *** UNIFIED FONT APPLICATION SYSTEM ***
+  const applyFontToFabricObject = (fabricObject, fontFamily, bold, italic, underline, color, textAlign) => {
+    if (!fabricObject || !fabricRef.current) return;
+
+    // Get the actual font family name - ensure it exists
+    const actualFontFamily = fontFamily && availableFonts.includes(fontFamily) ? fontFamily : availableFonts[0];
+    if (!actualFontFamily) return;
+
+    // Build complete font CSS family string
+    const cssFontFamily = `"${actualFontFamily}", sans-serif`;
+    
+    // Determine proper font weight and style based on available variants
+    let fontWeight = 'normal';
+    let fontStyle = 'normal';
+    
+    if (actualFontFamily && fontVariants[actualFontFamily]) {
+      const variants = fontVariants[actualFontFamily];
+      
+      // Check what's actually available and requested
+      const hasBold = variants.includes('bold');
+      const hasItalic = variants.includes('italic');
+      const hasBoldItalic = variants.includes('bolditalic');
+      
+      if (bold && italic && hasBoldItalic) {
+        fontWeight = 'bold';
+        fontStyle = 'italic';
+      } else if (bold && (hasBold || hasBoldItalic)) {
+        fontWeight = 'bold';
+        fontStyle = italic && hasItalic ? 'italic' : 'normal';
+      } else if (italic && (hasItalic || hasBoldItalic)) {
+        fontWeight = bold && hasBold ? 'bold' : 'normal';
+        fontStyle = 'italic';
+      } else {
+        // Fallback to CSS simulation if variants not available
+        fontWeight = bold ? 'bold' : 'normal';
+        fontStyle = italic ? 'italic' : 'normal';
+      }
+    } else {
+      // Fallback CSS simulation
+      fontWeight = bold ? 'bold' : 'normal';
+      fontStyle = italic ? 'italic' : 'normal';
+    }
+
+    // Apply all font properties at once
+    const fontProperties = {
+      fontFamily: cssFontFamily,
+      fontWeight: fontWeight,
+      fontStyle: fontStyle,
+      underline: underline || false,
+      fill: color || '#000000',
+      textAlign: textAlign || 'left'
+    };
+
+    console.log('Applying font properties to canvas:', {
+      actualFontFamily,
+      bold,
+      italic,
+      fontProperties,
+      availableVariants: fontVariants[actualFontFamily]
+    });
+
+    fabricObject.set(fontProperties);
+    
+    // Adjust padding based on font properties
+    const newPadding = calculateTextPadding(fabricObject);
+    fabricObject.set('padding', newPadding);
+    
+    // Clear cache to force re-render with new font properties
+    fabricObject._clearCache();
+    
+    // Force immediate render
+    if (fabricRef.current) {
+      fabricRef.current.renderAll();
+    }
+  };
 
   const getCanvasDimensions = (ratio) => {
-    // Fixed base dimensions
     const baseWidth = 1000;
     const [w, h] = ratio.split(':').map(Number);
     const baseHeight = (baseWidth * h) / w;
@@ -428,7 +725,6 @@ const TemplateDesigner = () => {
             const targetIndex = template.layers.findIndex(l => l.id === e.target.layerId);
             const targetType = template.layers.find(l => l.id === e.target.layerId)?.type;
         
-            // Always allow pictures to be interactive regardless of layer order
             if (targetType === 'picture') {
               e.target.set({
                 selectable: true,
@@ -454,7 +750,6 @@ const TemplateDesigner = () => {
               });
               fabricRef.current.renderAll();
             } else {
-              // For other objects, maintain the layer order restrictions
               if (designIndex !== -1 && targetIndex < designIndex) {
                 e.target.selectable = false;
                 e.target.evented = false;
@@ -506,10 +801,8 @@ const TemplateDesigner = () => {
   const restoreCanvas = async (loadedTemplate) => {
     if (!fabricRef.current || !loadedTemplate?.layers) return;
   
-    // Clear existing canvas
     fabricRef.current.clear();
   
-    // Process layers in reverse order (bottom to top)
     for (const layer of [...loadedTemplate.layers].reverse()) {
       switch (layer.type) {
         case 'design': {
@@ -577,7 +870,7 @@ const TemplateDesigner = () => {
                 top: layer.properties.top,
                 scaleX: layer.properties.scaleX,
                 scaleY: layer.properties.scaleY,
-                angle: layer.properties.angle,
+                angle: layer.properties.angle || 0,
                 cornerStyle: 'circle',
                 cornerSize: 8,
                 transparentCorners: false,
@@ -604,41 +897,32 @@ const TemplateDesigner = () => {
             continue;
           }
           
-          // Get the variable data, which might now have formatting options
           const variableName = layer.properties.variable;
           let textValue = '';
           
           if (variableName && texts[variableName]) {
-            // Use formatted text if a format is selected
             if (layer.properties.format && texts[variableName].formatting) {
               const formatItem = texts[variableName].formatting.find(f => f.format === layer.properties.format);
               if (formatItem) {
                 textValue = formatItem.result;
               } else {
-                // Fall back to first format or raw value
                 textValue = texts[variableName].formatting && texts[variableName].formatting.length > 0 
                   ? texts[variableName].formatting[0].result 
                   : texts[variableName].value;
               }
             } else {
-              // No format specified, use raw value or first format
               textValue = texts[variableName].formatting && texts[variableName].formatting.length > 0 
                 ? texts[variableName].formatting[0].result 
                 : texts[variableName].value;
             }
           } else {
-            textValue = layer.properties.text || '';
+            textValue = layer.properties.text || 'Select Variable';
           }
           
-          // Make sure textValue is a string
           const safeTextValue = typeof textValue === 'string' ? textValue : String(textValue);
           
-          // Ensure fontFamily is one of the supported fonts from Fontsource
-          const fontName = layer.properties.fontFamily || 'Roboto';
-          const fontFamily = fontOptions.find(f => f.name === fontName)?.family || 'Roboto, sans-serif';
-          
-          // Make sure we only change the text alignment, not the position
-          const textAlign = layer.properties.textAlign || 'left';
+          // Ensure font family is set with fallback
+          const fontFamily = layer.properties.fontFamily || availableFonts[0] || 'Open Sans';
           
           const textbox = new window.fabric.Textbox(safeTextValue, {
             layerId: layer.id,
@@ -647,15 +931,14 @@ const TemplateDesigner = () => {
             width: layer.properties.width,
             height: layer.properties.height,
             fontSize: layer.properties.fontSize || 50,
-            fontFamily: fontFamily,
-            fill: layer.properties.color,
-            textAlign: textAlign,
-            originX: 'left', // Always keep originX as 'left' to maintain position
-            originY: 'top',  // Always keep originY as 'top' to maintain position
+            fill: layer.properties.color || '#000000',
+            textAlign: layer.properties.textAlign || 'left',
+            originX: 'left',
+            originY: 'top',
             splitByGrapheme: false,
             breakWords: true,
             lockUniScaling: true,
-            padding: 0,
+            padding: 8,
             cornerStyle: 'circle',
             cornerSize: 8,
             transparentCorners: false,
@@ -666,8 +949,6 @@ const TemplateDesigner = () => {
             hasControls: true,
             charSpacing: 0,
             lineHeight: 1.2,
-            fontWeight: layer.properties.bold ? 'bold' : 'normal',
-            fontStyle: layer.properties.italic ? 'italic' : 'normal',
             underline: layer.properties.underline,
             visible: layer.visible,
             fixedWidth: layer.properties.fixedWidth || layer.properties.width,
@@ -677,6 +958,17 @@ const TemplateDesigner = () => {
             angle: layer.properties.angle || 0,
             centeredRotation: true
           });
+
+          // Apply font using unified system - immediately, not with delay
+          applyFontToFabricObject(
+            textbox,
+            fontFamily,
+            layer.properties.bold,
+            layer.properties.italic,
+            layer.properties.underline,
+            layer.properties.color,
+            layer.properties.textAlign
+          );
         
           textbox.on('scaling', () => {
             const width = textbox.width * textbox.scaleX;
@@ -713,8 +1005,8 @@ const TemplateDesigner = () => {
           }
           
           const [ratioW, ratioH] = aspectRatio.split(':').map(Number);
-          const containerWidth = fabricRef.current.width * 0.3;
-          const containerHeight = (containerWidth * ratioH) / ratioW;
+          const containerWidth = layer.properties.width || fabricRef.current.width * 0.3;
+          const containerHeight = layer.properties.height || (containerWidth * ratioH) / ratioW;
         
           const rect = new window.fabric.Rect({
             layerId: layer.id,
@@ -722,9 +1014,9 @@ const TemplateDesigner = () => {
             top: layer.properties.top,
             width: containerWidth,
             height: containerHeight,
-            scaleX: layer.properties.scaleX,
-            scaleY: layer.properties.scaleY,
-            angle: layer.properties.angle,
+            scaleX: layer.properties.scaleX || 1,
+            scaleY: layer.properties.scaleY || 1,
+            angle: layer.properties.angle || 0,
             fill: 'transparent',
             stroke: '#cccccc',
             strokeWidth: 1,
@@ -740,7 +1032,8 @@ const TemplateDesigner = () => {
             borderColor: 'transparent',
             noScaleCache: false,
             objectCaching: false,
-            strokeUniform: true
+            strokeUniform: true,
+            visible: layer.visible
           });
         
           rect.setControlsVisibility({
@@ -766,10 +1059,14 @@ const TemplateDesigner = () => {
           if (fabricRef.current) {
             fabricRef.current.add(rect);
           
+            // Load image if imageIndex is set
             if (layer.properties.imageIndex !== null && 
                 layer.properties.imageIndex !== undefined && 
                 images[layer.properties.imageIndex]) {
-              addImageToContainer(layer.id, layer.properties.imageIndex);
+              // Delay to ensure container is fully added
+              setTimeout(() => {
+                addImageToContainer(layer.id, layer.properties.imageIndex);
+              }, 100);
             }
           }
           break;
@@ -856,11 +1153,9 @@ const TemplateDesigner = () => {
             originalScaleY: scale
           });
   
-          // Add the image to canvas and send to back
           fabricRef.current.add(fabricImg);
           fabricRef.current.sendToBack(fabricImg);
   
-          // Add layer to the end of the layers array instead of the beginning
           setTemplate(prev => ({
             ...prev,
             layers: [
@@ -886,13 +1181,12 @@ const TemplateDesigner = () => {
   };
 
   const addImageToContainer = (layerId, imageIndex) => {
-    // Early return if fabricRef.current is null or undefined
     if (!fabricRef.current) {
       console.warn('Canvas reference is not available. Cannot add image to container.');
       return;
     }
 
-    if (!images || !images[imageIndex]) {
+    if (!images || images[imageIndex] === undefined) {
       console.warn('Image not available:', { layerId, imageIndex, images });
       return;
     }
@@ -904,7 +1198,6 @@ const TemplateDesigner = () => {
     }
   
     window.fabric.Image.fromURL(images[imageIndex], (img) => {
-      // Check again that fabricRef.current is available, as the image loading might be async
       if (!fabricRef.current) {
         console.warn('Canvas reference was lost while loading image');
         return;
@@ -918,7 +1211,6 @@ const TemplateDesigner = () => {
         fabricRef.current.remove(oldImage);
       }
   
-      // Calculate scale to fill container while maintaining aspect ratio
       const containerWidth = container.width * container.scaleX;
       const containerHeight = container.height * container.scaleY;
       const imgAspectRatio = img.width / img.height;
@@ -933,7 +1225,6 @@ const TemplateDesigner = () => {
         scaleY = scaleX;
       }
   
-      // Create clipping path
       const clipPath = new window.fabric.Rect({
         left: container.left,
         top: container.top,
@@ -947,7 +1238,6 @@ const TemplateDesigner = () => {
         objectCaching: false
       });
   
-      // Set up the image
       img.set({
         left: container.left,
         top: container.top,
@@ -961,20 +1251,19 @@ const TemplateDesigner = () => {
         hasBorders: false,
         lockMovementX: true,
         lockMovementY: true,
-        evented: false
+        evented: false,
+        visible: container.visible
       });
   
-      // Add image to canvas and position it right after the container
       if (fabricRef.current) {
         fabricRef.current.add(img);
         fabricRef.current.moveTo(img, fabricRef.current.getObjects().indexOf(container) + 1);
       
-        // Remove any existing event listeners
+        // Remove old event handlers
         container.off('moving');
         container.off('scaling');
         container.off('rotating');
       
-        // Add new event listeners
         container.on('moving', () => {
           if (!fabricRef.current) return;
           
@@ -994,7 +1283,6 @@ const TemplateDesigner = () => {
         container.on('scaling', () => {
           if (!fabricRef.current) return;
           
-          // Update clipPath with container's new dimensions
           clipPath.set({
             scaleX: container.scaleX,
             scaleY: container.scaleY,
@@ -1002,7 +1290,6 @@ const TemplateDesigner = () => {
             top: container.top
           });
       
-          // Recalculate image scale to fit new container size
           const newWidth = container.width * container.scaleX;
           const newHeight = container.height * container.scaleY;
           const newAspectRatio = newWidth / newHeight;
@@ -1044,7 +1331,6 @@ const TemplateDesigner = () => {
           fabricRef.current.renderAll();
         });
       
-        // Ensure proper stacking order
         fabricRef.current.renderAll();
       }
     });
@@ -1053,20 +1339,16 @@ const TemplateDesigner = () => {
   const validateImageSize = (img, canvasWidth, canvasHeight) => {
     const imgRatio = img.width / img.height;
     const canvasRatio = canvasWidth / canvasHeight;
-    const tolerance = 0.03; // 3% tolerance
+    const tolerance = 0.03;
 
     if (Math.abs(imgRatio - canvasRatio) <= tolerance) {
-      // Ratios are close enough, fill the canvas
       const scaleX = canvasWidth / img.width;
       const scaleY = canvasHeight / img.height;
       return Math.max(scaleX, scaleY);
     } else {
-      // Ratios differ significantly, maintain aspect ratio
       if (imgRatio > canvasRatio) {
-        // Image is wider, fill width
         return canvasWidth / img.width;
       } else {
-        // Image is taller, fill height
         return canvasHeight / img.height;
       }
     }
@@ -1078,41 +1360,67 @@ const TemplateDesigner = () => {
     const boxWidth = textObject.fixedWidth;
     const boxHeight = textObject.fixedHeight;
     
+    // Add more padding for bold text and right alignment
+    let internalPadding = 5;
+    const isBold = textObject.fontWeight === 'bold';
+    const isRightAligned = textObject.textAlign === 'right';
+    const isCenterAligned = textObject.textAlign === 'center';
+    
+    // Add extra padding for bold text
+    if (isBold) {
+      internalPadding += 3;
+    }
+    
+    // Calculate effective width accounting for alignment and bold
+    let effectiveWidth = boxWidth - (internalPadding * 2);
+    
+    // For right-aligned bold text, add even more padding
+    if (isBold && isRightAligned) {
+      effectiveWidth -= 5;
+    }
+    
+    // For center-aligned bold text, ensure symmetrical padding
+    if (isBold && isCenterAligned) {
+      effectiveWidth -= 2;
+    }
+    
     let fontSize = 100;
     const minFontSize = 8;
     
     textObject.set({
-      width: boxWidth,
+      width: effectiveWidth,
       height: boxHeight,
       scaleX: 1,
       scaleY: 1
     });
   
-    // Binary search for optimal font size
     let low = minFontSize;
     let high = fontSize;
   
+    // Binary search for the best font size
     while (low <= high) {
       fontSize = Math.floor((low + high) / 2);
       
       textObject.set({
         fontSize: fontSize,
-        width: boxWidth
+        width: effectiveWidth
       });
   
-      // Get height after text wrapping
+      // Force text measurement update
+      textObject._clearCache();
+      
       const textHeight = textObject.calcTextHeight();
       
-      if (textHeight <= boxHeight) {
+      if (textHeight <= boxHeight - (internalPadding * 2)) {
         low = fontSize + 1;
       } else {
         high = fontSize - 1;
       }
     }
   
-    // Use the largest font size that fits
     fontSize = high;
     
+    // Final setup with proper width
     textObject.set({
       fontSize: fontSize,
       width: boxWidth,
@@ -1120,6 +1428,10 @@ const TemplateDesigner = () => {
       scaleX: 1,
       scaleY: 1
     });
+    
+    // Force final render
+    textObject._clearCache();
+    textObject.setCoords();
   
     if (textObject.layerId) {
       setTemplate(prev => ({
@@ -1152,7 +1464,6 @@ const TemplateDesigner = () => {
     let layerName;
     let layerProperties;
   
-    // Helper functions for getting next number
     const getNextNumber = (layerType, namePattern) => {
       const filteredLayers = template.layers.filter(l => l.type === layerType);
       const numbers = filteredLayers.map(l => {
@@ -1209,11 +1520,11 @@ const TemplateDesigner = () => {
                   scaleX: scale,
                   scaleY: scale,
                   left: 50,
-                  top: 50
+                  top: 50,
+                  angle: 0
                 }
               };
   
-              // Add new layer to the beginning of the array (will appear on top)
               setTemplate(prev => ({
                 ...prev,
                 layers: [newLayer, ...prev.layers]
@@ -1231,10 +1542,9 @@ const TemplateDesigner = () => {
           const defaultWidth = fabricRef.current.width * 0.3;
           const defaultHeight = fabricRef.current.height * 0.1;
           
-          // Use Fontsource font that works on the server
-          const fontFamily = 'Roboto, sans-serif';
+          // Use first available font - CRITICAL: Ensure layer properties match what will be displayed
+          const defaultFontFamily = availableFonts[0] || 'Open Sans';
 
-          // Always keep originX and originY fixed to maintain position
           fabricObject = new window.fabric.Textbox('Select Variable', {
             left: 50,
             top: 50,
@@ -1242,7 +1552,6 @@ const TemplateDesigner = () => {
             height: defaultHeight,
             fontSize: 50,
             layerId,
-            fontFamily: fontFamily,
             fill: '#000000',
             textAlign: 'left',
             originX: 'left', 
@@ -1250,7 +1559,7 @@ const TemplateDesigner = () => {
             splitByGrapheme: false,
             breakWords: true,
             lockUniScaling: true,
-            padding: 0,
+            padding: 8,
             cornerStyle: 'circle',
             cornerSize: 8,
             transparentCorners: false,
@@ -1261,14 +1570,15 @@ const TemplateDesigner = () => {
             hasControls: true,
             charSpacing: 0,
             lineHeight: 1.2,
-            fontWeight: 'normal',
-            fontStyle: 'normal',
             underline: false,
             scaleX: 1,
             scaleY: 1,
             angle: 0,
             centeredRotation: true
           });
+
+          // Apply default font using unified system
+          applyFontToFabricObject(fabricObject, defaultFontFamily, false, false, false, '#000000', 'left');
 
           fabricObject.set({
             fixedWidth: defaultWidth,
@@ -1302,8 +1612,8 @@ const TemplateDesigner = () => {
           layerProperties = {
             variable: '',
             text: 'Select Variable',
-            format: '', // Add format property to store the selected format
-            fontFamily: 'Roboto',
+            format: '',
+            fontFamily: defaultFontFamily, // CRITICAL: Match what's displayed
             color: '#000000',
             left: 50,
             top: 50,
@@ -1379,7 +1689,10 @@ const TemplateDesigner = () => {
             height: containerHeight,
             left: 50,
             top: 50,
-            imageIndex: null
+            imageIndex: null,
+            scaleX: 1,
+            scaleY: 1,
+            angle: 0
           };
           break;
   
@@ -1401,7 +1714,6 @@ const TemplateDesigner = () => {
         properties: layerProperties
       };
   
-      // Add new layer to the beginning of the array (will appear on top)
       setTemplate(prev => ({
         ...prev,
         layers: [newLayer, ...prev.layers]
@@ -1409,7 +1721,7 @@ const TemplateDesigner = () => {
     }
   };
 
-  const updateLayer = (layerId, newProperties) => {
+  const updateLayer = async (layerId, newProperties) => {
     if (!fabricRef.current) return;
 
     const fabricObject = fabricRef.current.getObjects().find(obj => obj.layerId === layerId);
@@ -1420,88 +1732,77 @@ const TemplateDesigner = () => {
       layers: prev.layers.map(layer => {
         if (layer.id === layerId) {
           if (layer.type === 'image' && 'imageIndex' in newProperties) {
-            addImageToContainer(layerId, newProperties.imageIndex);
+            // Handle image container updates
+            if (newProperties.imageIndex !== null) {
+              addImageToContainer(layerId, newProperties.imageIndex);
+            }
           } else if (layer.type === 'text') {
+            // Get current and new properties
+            const currentProps = layer.properties;
+            const updatedProps = { ...currentProps, ...newProperties };
+            
+            // Preserve dimensions
+            const currentWidth = fabricObject.fixedWidth || fabricObject.width;
+            const currentHeight = fabricObject.fixedHeight || fabricObject.height;
+            
             if (newProperties.variable && texts[newProperties.variable] !== undefined) {
-              // Find the font in our supported fonts list
-              const fontName = newProperties.fontFamily || layer.properties.fontFamily || 'Roboto';
-              const font = fontOptions.find(f => f.name === fontName);
-              const fontFamily = font ? font.family : 'Roboto, sans-serif';
-              
-              // Get the formatted text value based on selected format
+              // Handle variable selection
               let textValue;
               const variableData = texts[newProperties.variable];
               
-              // Determine which format to use
               if (newProperties.format) {
-                // Use specified format
                 const formatItem = variableData.formatting?.find(f => f.format === newProperties.format);
                 if (formatItem) {
                   textValue = formatItem.result;
                 } else if (variableData.formatting?.length > 0) {
-                  // Fall back to first format if specified format not found
                   textValue = variableData.formatting[0].result;
                 } else {
-                  // Fall back to raw value if no formatting available
                   textValue = variableData.value;
                 }
               } else if (variableData.formatting?.length > 0) {
-                // No format specified but formats exist, use first one
                 textValue = variableData.formatting[0].result;
                 
-                // Also update the format property in the layer
                 if (newProperties.variable !== layer.properties.variable) {
                   newProperties.format = variableData.formatting[0].format;
                 }
               } else {
-                // No formats available, use raw value
                 textValue = variableData.value;
               }
               
-              // Ensure text value is always a string
               if (textValue === null || textValue === undefined) {
                 textValue = '';
               } else if (typeof textValue !== 'string') {
                 textValue = String(textValue);
               }
               
-              const textStyles = {
-                text: textValue,
-                fontFamily: fontFamily,
-                fill: newProperties.color || layer.properties.color,
-                fontWeight: (newProperties.bold ?? layer.properties.bold) ? 'bold' : 'normal',
-                fontStyle: (newProperties.italic ?? layer.properties.italic) ? 'italic' : 'normal',
-                underline: newProperties.underline ?? layer.properties.underline,
-                textAlign: newProperties.textAlign || layer.properties.textAlign || 'left'
-              };
-          
-              fabricObject.set(textStyles);
-              fitTextToBox(fabricObject);
-              fabricRef.current.renderAll();
-            } else {
-              // Handle other property updates
-              const updates = { ...newProperties };
-              if ('bold' in updates) {
-                fabricObject.set('fontWeight', updates.bold ? 'bold' : 'normal');
-              }
-              if ('italic' in updates) {
-                fabricObject.set('fontStyle', updates.italic ? 'italic' : 'normal');
-              }
-              if ('underline' in updates) {
-                fabricObject.set('underline', updates.underline);
-              }
-              if ('fontFamily' in updates) {
-                const font = fontOptions.find(f => f.name === updates.fontFamily);
-                if (font) {
-                  fabricObject.set('fontFamily', font.family);
-                }
-              }
-              if ('color' in updates) {
-                fabricObject.set('fill', updates.color);
-              }
-              if ('textAlign' in updates) {
-                fabricObject.set('textAlign', updates.textAlign);
-              }
+              fabricObject.set('text', textValue);
+            }
+            
+            // Apply font changes immediately without delay
+            applyFontToFabricObject(
+              fabricObject,
+              updatedProps.fontFamily,
+              updatedProps.bold,
+              updatedProps.italic,
+              updatedProps.underline,
+              updatedProps.color,
+              updatedProps.textAlign
+            );
+            
+            // Preserve dimensions and refit text
+            fabricObject.set({
+              width: currentWidth,
+              height: currentHeight,
+              fixedWidth: currentWidth,
+              fixedHeight: currentHeight,
+              scaleX: 1,
+              scaleY: 1
+            });
+            
+            fitTextToBox(fabricObject);
+            
+            // Force render
+            if (fabricRef.current) {
               fabricRef.current.renderAll();
             }
           }
@@ -1522,14 +1823,12 @@ const TemplateDesigner = () => {
   const deleteLayer = (layerId) => {
     if (!fabricRef.current) return;
   
-    // Handle design layer specially
     if (layerId === 'design-layer') {
       const designObject = fabricRef.current.getObjects().find(obj => obj.isDesign);
       if (designObject) {
         fabricRef.current.remove(designObject);
       }
     } else {
-      // Handle other layers
       const objects = fabricRef.current.getObjects().filter(obj => 
         obj.layerId === layerId || obj.containerId === layerId
       );
@@ -1548,7 +1847,6 @@ const TemplateDesigner = () => {
   };
 
   const moveLayer = (dragIndex, hoverIndex) => {
-    // Update the template state with the new layer order
     setTemplate(prev => {
       const newLayers = update(prev.layers, {
         $splice: [
@@ -1558,10 +1856,8 @@ const TemplateDesigner = () => {
       });
   
       if (fabricRef.current) {
-        // Get all canvas objects
         const canvasObjects = fabricRef.current.getObjects();
         
-        // Create a map of objects by layer ID for quick lookup
         const objectMap = new Map();
         canvasObjects.forEach(obj => {
           if (obj.layerId) {
@@ -1573,11 +1869,8 @@ const TemplateDesigner = () => {
           }
         });
   
-        // Clear the canvas
         fabricRef.current.clear();
   
-        // Add objects back in the correct order (bottom to top)
-        // Reverse the layers array since fabric.js renders bottom to top
         [...newLayers].reverse().forEach(layer => {
           switch(layer.type) {
             case 'design': {
@@ -1621,17 +1914,26 @@ const TemplateDesigner = () => {
       ...prev,
       layers: prev.layers.map(layer => {
         if (layer.id === layerId) {
-          // Handle design layer visibility
           if (layer.type === 'design') {
             const designObject = fabricRef.current?.getObjects().find(obj => obj.isDesign);
             if (designObject) {
               designObject.visible = !layer.visible;
               fabricRef.current.renderAll();
             }
+          } else if (layer.type === 'image') {
+            // Toggle both container and image visibility
+            const container = fabricRef.current?.getObjects().find(obj => obj.layerId === layerId);
+            const image = fabricRef.current?.getObjects().find(obj => obj.containerId === layerId);
+            if (container) {
+              container.visible = !layer.visible;
+            }
+            if (image) {
+              image.visible = !layer.visible;
+            }
+            fabricRef.current?.renderAll();
           } else {
-            // Handle other layers
             const objects = fabricRef.current?.getObjects().filter(obj => 
-              obj.layerId === layerId || obj.containerId === layerId
+              obj.layerId === layerId
             );
             objects.forEach(obj => {
               obj.visible = !layer.visible;
@@ -1647,7 +1949,7 @@ const TemplateDesigner = () => {
 
   const validateDesignRatio = (imgWidth, imgHeight, targetRatio) => {
     const imgRatio = imgWidth / imgHeight;
-    const tolerance = 0.03; // 3% tolerance
+    const tolerance = 0.03;
     const [targetW, targetH] = targetRatio.split(':').map(Number);
     const expectedRatio = targetW / targetH;
     
@@ -1663,51 +1965,56 @@ const TemplateDesigner = () => {
     return { isValid: true };
   };
 
+  // Get validation messages for template
+  const getValidationMessages = () => {
+    const messages = [];
+    
+    if (!template.name || template.name.trim() === '') {
+      messages.push('Template name is required');
+    }
+    
+    const hasDesignLayer = template.layers.some(layer => layer.type === 'design');
+    if (!hasDesignLayer) {
+      messages.push('Template must include a design/background image');
+    }
+    
+    const hasAdditionalLayer = template.layers.some(layer => layer.type !== 'design');
+    if (!hasAdditionalLayer && hasDesignLayer) {
+      messages.push('Template must include at least one additional layer (text, image, or picture)');
+    }
+    
+    const invalidLayers = template.layers.filter(layer => {
+      switch (layer.type) {
+        case 'design':
+          return !layer.properties?.imageData;
+        case 'picture':
+          return !layer.properties?.imageData;
+        case 'image':
+          return layer.properties?.imageIndex === null || layer.properties?.imageIndex === undefined;
+        case 'text':
+          return !layer.properties?.variable || !layer.properties?.fontFamily;
+        default:
+          return false;
+      }
+    });
+    
+    if (invalidLayers.length > 0) {
+      const layerTypes = invalidLayers.map(layer => layer.name).join(', ');
+      messages.push(`The following layers have missing required properties: ${layerTypes}`);
+    }
+    
+    return messages;
+  };
+
   const handleSaveTemplate = async () => {
     try {
-      // Validate template name
-      if (!template.name || template.name.trim() === '') {
-        dispatch(setError('Template name is required'));
+      const validationMessages = getValidationMessages();
+      
+      if (validationMessages.length > 0) {
+        dispatch(setError(validationMessages[0])); // Show first error
         return;
       }
   
-      // Check for design layer
-      const hasDesignLayer = template.layers.some(layer => layer.type === 'design');
-      if (!hasDesignLayer) {
-        dispatch(setError('Template must include a design/background image'));
-        return;
-      }
-  
-      // Check for at least one additional layer (text, image, or picture)
-      const hasAdditionalLayer = template.layers.some(layer => layer.type !== 'design');
-      if (!hasAdditionalLayer) {
-        dispatch(setError('Template must include at least one additional layer (text, image, or picture)'));
-        return;
-      }
-  
-      // Validate all layers have required properties
-      const invalidLayers = template.layers.filter(layer => {
-        switch (layer.type) {
-          case 'design':
-            return !layer.properties?.imageData;
-          case 'picture':
-            return !layer.properties?.imageData;
-          case 'image':
-            return layer.properties?.imageIndex === null || layer.properties?.imageIndex === undefined;
-          case 'text':
-            return !layer.properties?.variable || !layer.properties?.fontFamily;
-          default:
-            return false;
-        }
-      });
-  
-      if (invalidLayers.length > 0) {
-        const layerTypes = invalidLayers.map(layer => layer.name).join(', ');
-        dispatch(setError(`The following layers have missing required properties: ${layerTypes}`));
-        return;
-      }
-  
-      // If validation passes, save the template
       const { id } = router.query;
       await dispatch(saveAdvertisingTemplate({ id, template })).unwrap();  
       router.push('/manage/advertising-templates');
@@ -1731,6 +2038,11 @@ const TemplateDesigner = () => {
     }
   };
 
+  // Load fonts on component mount
+  useEffect(() => {
+    loadFonts();
+  }, []);
+
   useEffect(() => { 
     const { id } = router.query;  
     if (id) dispatch(fetchAdvertisingTemplate(id));
@@ -1739,24 +2051,23 @@ const TemplateDesigner = () => {
   useEffect(() => {
     if (reduxTemplate) {
       setTemplate(reduxTemplate);
-      if (fabricRef.current && assetsLoaded) {
+      if (fabricRef.current && assetsLoaded && fontsLoaded) {
         restoreCanvas(reduxTemplate);
       }
     }
-  }, [reduxTemplate, assetsLoaded]);
+  }, [reduxTemplate, assetsLoaded, fontsLoaded]);
 
   useEffect(() => {
-    // Check if necessary data is loaded
-    if (images && images.length > 0 && texts && Object.keys(texts).length > 0) {
+    if (images && images.length > 0 && texts && Object.keys(texts).length > 0 && fontsLoaded) {
       setAssetsLoaded(true);
     }
-  }, [images, texts]);
+  }, [images, texts, fontsLoaded]);
 
+  // Handle canvas object selection
   useEffect(() => {
     if (fabricRef.current) {
       fabricRef.current.on('mouse:down', (e) => {
         if (e.target) {
-          // All objects except design layer and container images should be interactive
           if (e.target.isDesign || e.target.containerId) {
             e.target.selectable = false;
             e.target.evented = false;
@@ -1771,8 +2082,37 @@ const TemplateDesigner = () => {
     }
   }, [template.layers]);
 
+  // Force re-render when key changes
   useEffect(() => {
-    if (window.fabric) {
+    if (!fabricRef.current || forceRenderKey === 0) return;
+    
+    // Re-apply fonts to all text objects
+    template.layers.forEach(layer => {
+      if (layer.type === 'text') {
+        const fabricObject = fabricRef.current.getObjects().find(obj => obj.layerId === layer.id);
+        if (fabricObject) {
+          applyFontToFabricObject(
+            fabricObject,
+            layer.properties.fontFamily,
+            layer.properties.bold,
+            layer.properties.italic,
+            layer.properties.underline,
+            layer.properties.color,
+            layer.properties.textAlign
+          );
+          fitTextToBox(fabricObject);
+        }
+      }
+    });
+    
+    if (fabricRef.current) {
+      fabricRef.current.renderAll();
+    }
+  }, [forceRenderKey]);
+
+  // Initialize canvas once fonts are loaded
+  useEffect(() => {
+    if (window.fabric && fontsLoaded) {
       initializeCanvas();
       if (template?.layers?.length > 0) {
         restoreCanvas(template);
@@ -1785,7 +2125,7 @@ const TemplateDesigner = () => {
         fabricRef.current = null;
       }
     };
-  }, [template.designSize]);
+  }, [template.designSize, fontsLoaded]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -1828,8 +2168,6 @@ const TemplateDesigner = () => {
     setZoom(prevZoom => Math.max(prevZoom - 0.1, 0.5));
   };
 
-  console.log('Template Loaded:', template);  
-
   return (
     <StateHandler slice="advertisingTemplate">
       <DndProvider backend={HTML5Backend}>
@@ -1837,7 +2175,9 @@ const TemplateDesigner = () => {
           src="/fabricjs/fabric.min.js"
           onLoad={() => {
             console.log('Fabric.js loaded successfully');
-            initializeCanvas();
+            if (fontsLoaded) {
+              initializeCanvas();
+            }
           }}
           onError={(e) => console.error('Error loading Fabric.js:', e)}
         />
@@ -1885,6 +2225,23 @@ const TemplateDesigner = () => {
                           <option value="16:9">Horizontal (16:9)</option>
                         </Form.Select>
                       </Form.Group>
+
+                      {!fontsLoaded ? (
+                        <div className="alert alert-info">
+                          <i className="bi bi-info-circle me-2"></i>
+                          Loading font information...
+                        </div>
+                      ) : availableFonts.length === 0 ? (
+                        <div className="alert alert-warning">
+                          <i className="bi bi-exclamation-triangle me-2"></i>
+                          No fonts found in /public/fonts directory
+                        </div>
+                      ) : (
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          {availableFonts.length} fonts loaded successfully
+                        </div>
+                      )}
                     </Accordion.Body>
                   </Accordion.Item>
 
@@ -1911,7 +2268,7 @@ const TemplateDesigner = () => {
                           disabled={template.layers.some(layer => layer.type === 'design')}
                         >
                           <i className="bi bi-image me-2"></i>
-                          Add Design
+                          {template.layers.some(layer => layer.type === 'design') ? 'Design Added' : 'Add Design'}
                         </Button>
                         </Col>
                         <Col >
@@ -1929,6 +2286,7 @@ const TemplateDesigner = () => {
                           variant="outline-primary" 
                           onClick={() => addLayer('text')}
                           className="w-100"
+                          disabled={!fontsLoaded || availableFonts.length === 0}
                         >
                           <i className="bi bi-type me-2"></i>
                           Add Text
@@ -1945,8 +2303,14 @@ const TemplateDesigner = () => {
                         </Button>
                         </Col>
                         </Row>
-                  
 
+                      {!template.layers.some(layer => layer.type === 'design') && (
+                        <div className="alert alert-warning">
+                          <i className="bi bi-exclamation-triangle me-2"></i>
+                          <strong>Add a design background first!</strong> Upload a background design image before adding other layers.
+                        </div>
+                      )}
+                  
                       <div className="layers-list">
                         {template.layers.length === 0 ? (
                           <div className="text-center text-muted p-4 border rounded">
@@ -1957,7 +2321,7 @@ const TemplateDesigner = () => {
                         ) : (
                           template.layers.map((layer, index) => (
                             <LayerItem
-                              key={`${layer.id}-${JSON.stringify(layer.properties)}`}
+                              key={`${layer.id}-${JSON.stringify(layer.properties)}-${forceRenderKey}`}
                               layer={layer}
                               index={index}
                               moveLayer={moveLayer}
@@ -1966,6 +2330,10 @@ const TemplateDesigner = () => {
                               onUpdateLayer={updateLayer}
                               images={images}
                               textVariables={textVariables}
+                              availableFonts={availableFonts}
+                              fontVariants={fontVariants}
+                              fontMap={fontMap}
+                              onForceRerender={() => setForceRenderKey(prev => prev + 1)}
                             />
                           ))
                         )}
@@ -1987,11 +2355,26 @@ const TemplateDesigner = () => {
                   variant="primary" 
                   className="w-100 mt-3"
                   onClick={handleSaveTemplate}
-                  disabled={loading || !template.name || template.layers.length === 0 }
+                  disabled={loading || !fontsLoaded}
                 >
                 <i className="bi bi-download me-2"></i>
                 {loading ? 'Saving...' : 'Save Template'}
                 </Button>
+
+                {/* Validation Messages */}
+                {(() => {
+                  const validationMessages = getValidationMessages();
+                  return validationMessages.length > 0 && (
+                    <div className="mt-2">
+                      {validationMessages.map((message, index) => (
+                        <div key={index} className="alert alert-warning alert-sm mb-1 py-2">
+                          <i className="bi bi-exclamation-triangle me-2"></i>
+                          <small>{message}</small>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
           
                 <Button 
                   variant="danger" 
@@ -2000,7 +2383,7 @@ const TemplateDesigner = () => {
                   disabled={loading}
                 >
                   <i className="bi bi-trash me-2"></i>
-                  {loading ? 'Deleting...' : 'Delete Template'}
+                  {loading ? 'Deleting..' : 'Delete Template'}
                 </Button>              
 
               </Card.Body>
@@ -2020,7 +2403,7 @@ const TemplateDesigner = () => {
                       <i className="bi bi-zoom-in"></i>
                     </Button>
                     <span>Zoom: {Math.round(zoom * 100)}%</span>
-                  </Col>
+                  </Col>                  
                 </Row>
               </Container>
             </div>

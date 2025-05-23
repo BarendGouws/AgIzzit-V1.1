@@ -1,259 +1,494 @@
-/* Roboto */
+/* Almendra */
 @font-face {
-  font-family: 'Roboto';
-  src: url('/fonts/roboto/Regular.ttf') format('truetype');
-  font-weight: 400;
+  font-family: "Almendra";
+  src: url("/fonts/almendra/Regular.ttf") format("truetype");
+  font-weight: normal;
   font-style: normal;
-}
-@font-face {
-  font-family: 'Roboto';
-  src: url('/fonts/roboto/Bold.ttf') format('truetype');
-  font-weight: 700;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Roboto';
-  src: url('/fonts/roboto/Italic.ttf') format('truetype');
-  font-weight: 400;
-  font-style: italic;
-}
-@font-face {
-  font-family: 'Roboto';
-  src: url('/fonts/roboto/BoldItalic.ttf') format('truetype');
-  font-weight: 700;
-  font-style: italic;
+  font-display: swap;
 }
 
-/* Open Sans */
 @font-face {
-  font-family: 'Open Sans';
-  src: url('/fonts/open-sans/Regular.ttf') format('truetype');
-  font-weight: 400;
+  font-family: "Almendra";
+  src: url("/fonts/almendra/Bold.ttf") format("truetype");
+  font-weight: bold;
   font-style: normal;
-}
-@font-face {
-  font-family: 'Open Sans';
-  src: url('/fonts/open-sans/Bold.ttf') format('truetype');
-  font-weight: 700;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Open Sans';
-  src: url('/fonts/open-sans/Italic.ttf') format('truetype');
-  font-weight: 400;
-  font-style: italic;
-}
-@font-face {
-  font-family: 'Open Sans';
-  src: url('/fonts/open-sans/BoldItalic.ttf') format('truetype');
-  font-weight: 700;
-  font-style: italic;
+  font-display: swap;
 }
 
-/* Montserrat */
 @font-face {
-  font-family: 'Montserrat';
-  src: url('/fonts/montserrat/Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Montserrat';
-  src: url('/fonts/montserrat/Bold.ttf') format('truetype');
-  font-weight: 700;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Montserrat';
-  src: url('/fonts/montserrat/Italic.ttf') format('truetype');
-  font-weight: 400;
+  font-family: "Almendra";
+  src: url("/fonts/almendra/Italic.ttf") format("truetype");
+  font-weight: normal;
   font-style: italic;
-}
-@font-face {
-  font-family: 'Montserrat';
-  src: url('/fonts/montserrat/BoldItalic.ttf') format('truetype');
-  font-weight: 700;
-  font-style: italic;
+  font-display: swap;
 }
 
-/* Lato */
 @font-face {
-  font-family: 'Lato';
-  src: url('/fonts/lato/Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Lato';
-  src: url('/fonts/lato/Bold.ttf') format('truetype');
-  font-weight: 700;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Lato';
-  src: url('/fonts/lato/Italic.ttf') format('truetype');
-  font-weight: 400;
+  font-family: "Almendra";
+  src: url("/fonts/almendra/BoldItalic.ttf") format("truetype");
+  font-weight: bold;
   font-style: italic;
-}
-@font-face {
-  font-family: 'Lato';
-  src: url('/fonts/lato/BoldItalic.ttf') format('truetype');
-  font-weight: 700;
-  font-style: italic;
-}
-
-/* Cabin */
-@font-face {
-  font-family: 'Cabin';
-  src: url('/fonts/cabin/Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Cabin';
-  src: url('/fonts/cabin/Bold.ttf') format('truetype');
-  font-weight: 700;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Cabin';
-  src: url('/fonts/cabin/Italic.ttf') format('truetype');
-  font-weight: 400;
-  font-style: italic;
-}
-@font-face {
-  font-family: 'Cabin';
-  src: url('/fonts/cabin/BoldItalic.ttf') format('truetype');
-  font-weight: 700;
-  font-style: italic;
-}
-
-/* Playfair Display */
-@font-face {
-  font-family: 'Playfair Display';
-  src: url('/fonts/playfair-display/Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Playfair Display';
-  src: url('/fonts/playfair-display/Bold.ttf') format('truetype');
-  font-weight: 700;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Playfair Display';
-  src: url('/fonts/playfair-display/Italic.ttf') format('truetype');
-  font-weight: 400;
-  font-style: italic;
-}
-@font-face {
-  font-family: 'Playfair Display';
-  src: url('/fonts/playfair-display/BoldItalic.ttf') format('truetype');
-  font-weight: 700;
-  font-style: italic;
-}
-
-/* Roboto Mono */
-@font-face {
-  font-family: 'Roboto Mono';
-  src: url('/fonts/roboto-mono/Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Roboto Mono';
-  src: url('/fonts/roboto-mono/Bold.ttf') format('truetype');
-  font-weight: 700;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Roboto Mono';
-  src: url('/fonts/roboto-mono/Italic.ttf') format('truetype');
-  font-weight: 400;
-  font-style: italic;
-}
-@font-face {
-  font-family: 'Roboto Mono';
-  src: url('/fonts/roboto-mono/BoldItalic.ttf') format('truetype');
-  font-weight: 700;
-  font-style: italic;
-}
-
-/* Comic Neue */
-@font-face {
-  font-family: 'Comic Neue';
-  src: url('/fonts/comic-neue/Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Comic Neue';
-  src: url('/fonts/comic-neue/Bold.ttf') format('truetype');
-  font-weight: 700;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Comic Neue';
-  src: url('/fonts/comic-neue/Italic.ttf') format('truetype');
-  font-weight: 400;
-  font-style: italic;
-}
-@font-face {
-  font-family: 'Comic Neue';
-  src: url('/fonts/comic-neue/BoldItalic.ttf') format('truetype');
-  font-weight: 700;
-  font-style: italic;
-}
-
-/* Ubuntu */
-@font-face {
-  font-family: 'Ubuntu';
-  src: url('/fonts/ubuntu/Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Ubuntu';
-  src: url('/fonts/ubuntu/Bold.ttf') format('truetype');
-  font-weight: 700;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Ubuntu';
-  src: url('/fonts/ubuntu/Italic.ttf') format('truetype');
-  font-weight: 400;
-  font-style: italic;
-}
-@font-face {
-  font-family: 'Ubuntu';
-  src: url('/fonts/ubuntu/BoldItalic.ttf') format('truetype');
-  font-weight: 700;
-  font-style: italic;
+  font-display: swap;
 }
 
 /* Archivo */
 @font-face {
-  font-family: 'Archivo';
-  src: url('/fonts/archivo/Regular.ttf') format('truetype');
-  font-weight: 400;
+  font-family: "Archivo";
+  src: url("/fonts/archivo/Regular.ttf") format("truetype");
+  font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
+
 @font-face {
-  font-family: 'Archivo';
-  src: url('/fonts/archivo/Bold.ttf') format('truetype');
-  font-weight: 700;
+  font-family: "Archivo";
+  src: url("/fonts/archivo/Bold.ttf") format("truetype");
+  font-weight: bold;
   font-style: normal;
+  font-display: swap;
 }
+
 @font-face {
-  font-family: 'Archivo';
-  src: url('/fonts/archivo/Italic.ttf') format('truetype');
-  font-weight: 400;
+  font-family: "Archivo";
+  src: url("/fonts/archivo/Italic.ttf") format("truetype");
+  font-weight: normal;
   font-style: italic;
+  font-display: swap;
 }
+
 @font-face {
-  font-family: 'Archivo';
-  src: url('/fonts/archivo/BoldItalic.ttf') format('truetype');
-  font-weight: 700;
+  font-family: "Archivo";
+  src: url("/fonts/archivo/BoldItalic.ttf") format("truetype");
+  font-weight: bold;
   font-style: italic;
+  font-display: swap;
+}
+
+/* Barlow Condensed */
+@font-face {
+  font-family: "Barlow Condensed";
+  src: url("/fonts/barlow-condensed/Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Barlow Condensed";
+  src: url("/fonts/barlow-condensed/Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Barlow Condensed";
+  src: url("/fonts/barlow-condensed/Italic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Barlow Condensed";
+  src: url("/fonts/barlow-condensed/BoldItalic.ttf") format("truetype");
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Bodoni Moda */
+@font-face {
+  font-family: "Bodoni Moda";
+  src: url("/fonts/bodoni-moda/Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Bodoni Moda";
+  src: url("/fonts/bodoni-moda/Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Bodoni Moda";
+  src: url("/fonts/bodoni-moda/Italic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Bodoni Moda";
+  src: url("/fonts/bodoni-moda/BoldItalic.ttf") format("truetype");
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Cabin */
+@font-face {
+  font-family: "Cabin";
+  src: url("/fonts/cabin/Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Cabin";
+  src: url("/fonts/cabin/Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Cabin";
+  src: url("/fonts/cabin/Italic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Cabin";
+  src: url("/fonts/cabin/BoldItalic.ttf") format("truetype");
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Chivo */
+@font-face {
+  font-family: "Chivo";
+  src: url("/fonts/chivo/Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Chivo";
+  src: url("/fonts/chivo/Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Chivo";
+  src: url("/fonts/chivo/Italic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Chivo";
+  src: url("/fonts/chivo/BoldItalic.ttf") format("truetype");
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Comic Neue */
+@font-face {
+  font-family: "Comic Neue";
+  src: url("/fonts/comic-neue/Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Comic Neue";
+  src: url("/fonts/comic-neue/Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Comic Neue";
+  src: url("/fonts/comic-neue/Italic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Comic Neue";
+  src: url("/fonts/comic-neue/BoldItalic.ttf") format("truetype");
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Lato */
+@font-face {
+  font-family: "Lato";
+  src: url("/fonts/lato/Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Lato";
+  src: url("/fonts/lato/Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Lato";
+  src: url("/fonts/lato/Italic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Lato";
+  src: url("/fonts/lato/BoldItalic.ttf") format("truetype");
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Montserrat */
+@font-face {
+  font-family: "Montserrat";
+  src: url("/fonts/montserrat/Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("/fonts/montserrat/Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("/fonts/montserrat/Italic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("/fonts/montserrat/BoldItalic.ttf") format("truetype");
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Open Sans */
+@font-face {
+  font-family: "Open Sans";
+  src: url("/fonts/open-sans/Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/fonts/open-sans/Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/fonts/open-sans/Italic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/fonts/open-sans/BoldItalic.ttf") format("truetype");
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Playfair Display */
+@font-face {
+  font-family: "Playfair Display";
+  src: url("/fonts/playfair-display/Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Playfair Display";
+  src: url("/fonts/playfair-display/Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Playfair Display";
+  src: url("/fonts/playfair-display/Italic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Playfair Display";
+  src: url("/fonts/playfair-display/BoldItalic.ttf") format("truetype");
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Roboto */
+@font-face {
+  font-family: "Roboto";
+  src: url("/fonts/roboto/Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/fonts/roboto/Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/fonts/roboto/Italic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/fonts/roboto/BoldItalic.ttf") format("truetype");
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Roboto Condensed */
+@font-face {
+  font-family: "Roboto Condensed";
+  src: url("/fonts/roboto-condensed/Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto Condensed";
+  src: url("/fonts/roboto-condensed/Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto Condensed";
+  src: url("/fonts/roboto-condensed/Italic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto Condensed";
+  src: url("/fonts/roboto-condensed/BoldItalic.ttf") format("truetype");
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Roboto Mono */
+@font-face {
+  font-family: "Roboto Mono";
+  src: url("/fonts/roboto-mono/Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto Mono";
+  src: url("/fonts/roboto-mono/Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto Mono";
+  src: url("/fonts/roboto-mono/Italic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto Mono";
+  src: url("/fonts/roboto-mono/BoldItalic.ttf") format("truetype");
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Ubuntu */
+@font-face {
+  font-family: "Ubuntu";
+  src: url("/fonts/ubuntu/Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Ubuntu";
+  src: url("/fonts/ubuntu/Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Ubuntu";
+  src: url("/fonts/ubuntu/Italic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Ubuntu";
+  src: url("/fonts/ubuntu/BoldItalic.ttf") format("truetype");
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
 }
