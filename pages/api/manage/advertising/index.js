@@ -223,23 +223,30 @@ const generateDesignWithAzureUpload = async (listing, template) => {
           break;
         }        
         case 'text': {
-            const textContent = (() => {
-              if (props.variable && listing.texts && listing.texts[props.variable]) return String(listing.texts[props.variable]);
-              if (props.text && typeof props.text === 'string') return props.text;
-              return '';
-            })();
-            if (!textContent) continue;
+            if (!props.variable || !listing[props.variable]) break;
+            let value = listing[props.variable];
 
-            const left = props.left;
-            const top = props.top;
-            const textWidth = props.width * (props.scaleX || 1);
-            const textHeight = props.height * (props.scaleY || 1);
-            const align = props.textAlign || 'left';
-            const angle = (props.angle || 0) * Math.PI / 180;
-            const color = props.color || '#000000';
-            const fontFamily = props.fontFamily && availableFonts.includes(props.fontFamily) ? props.fontFamily : 'Roboto';
+            let textValue = '';
+            if (props.format) {
+              try {
+                const variableName = props.variable;
+                const formatFunction = new Function(variableName, `return ${props.format};`);
+                textValue = formatFunction(value);
+              } catch (err) {
+                console.error('Format eval failed:', err);
+                textValue = String(value);
+              }
+            } else {
+              textValue = String(value);
+            }
 
-            // Build font style string
+            const fontFamily = props.fontFamily && availableFonts.includes(props.fontFamily)
+              ? props.fontFamily
+              : 'Roboto';
+
+            const align = props.textAlign || 'center';
+            const lineHeightMultiplier = 1.2;
+
             const buildFont = (size) => {
               let style = '';
               if (props.italic) style += 'italic ';
@@ -247,17 +254,13 @@ const generateDesignWithAzureUpload = async (listing, template) => {
               return `${style}${size}px "${fontFamily}"`;
             };
 
-            const lineHeightMultiplier = 1.2;
-            let optimalFontSize = props.fontSize || 36;
-            let finalLines = [];
-
-            const wrapText = (ctx, text, fontSize, maxWidth) => {
-              ctx.font = buildFont(fontSize);
+            const wrapText = (ctx, text, size, maxWidth) => {
+              ctx.font = buildFont(size);
               const words = text.split(' ');
               const lines = [];
               let currentLine = words[0] || '';
               for (let i = 1; i < words.length; i++) {
-                const testLine = `${currentLine} ${words[i]}`;
+                const testLine = currentLine + ' ' + words[i];
                 if (ctx.measureText(testLine).width > maxWidth - 10) {
                   lines.push(currentLine);
                   currentLine = words[i];
@@ -269,46 +272,56 @@ const generateDesignWithAzureUpload = async (listing, template) => {
               return lines;
             };
 
-            // Fit text in box
-            let minFontSize = 10, maxFontSize = 100;
-            while (minFontSize <= maxFontSize) {
-              const testSize = Math.floor((minFontSize + maxFontSize) / 2);
-              const testLines = wrapText(ctx, textContent, testSize, textWidth);
-              const totalHeight = testLines.length * testSize * lineHeightMultiplier;
-              if (totalHeight <= textHeight - 10) {
-                optimalFontSize = testSize;
-                finalLines = testLines;
-                minFontSize = testSize + 1;
+            let minSize = 8, maxSize = 200, fontSize = minSize, finalLines = [];
+            while (minSize <= maxSize) {
+              let mid = Math.floor((minSize + maxSize) / 2);
+              let lines = wrapText(ctx, textValue, mid, props.width);
+              let totalHeight = lines.length * mid * lineHeightMultiplier;
+              if (totalHeight <= props.height) {
+                fontSize = mid;
+                finalLines = lines;
+                minSize = mid + 1;
               } else {
-                maxFontSize = testSize - 1;
+                maxSize = mid - 1;
               }
             }
 
-            const textAlignOffset = align === 'center' ? textWidth / 2 : align === 'right' ? textWidth - 5 : 5;
-            const totalTextHeight = finalLines.length * optimalFontSize * lineHeightMultiplier;
-            const startY = Math.max((textHeight - totalTextHeight) / 2, 0);
-
             ctx.save();
-            ctx.translate(left, top);
-            if (angle) {
-              ctx.translate(textWidth / 2, textHeight / 2);
-              ctx.rotate(angle);
-              ctx.translate(-textWidth / 2, -textHeight / 2);
-            }
+            ctx.translate(props.left, props.top);
+            if (props.angle) ctx.rotate(props.angle * Math.PI / 180);
 
-            ctx.font = buildFont(optimalFontSize);
-            ctx.fillStyle = color;
+            ctx.fillStyle = props.color || '#000000';
             ctx.textBaseline = 'top';
             ctx.textAlign = align;
+            ctx.font = buildFont(fontSize);
+
+            const totalTextHeight = finalLines.length * fontSize * lineHeightMultiplier;
+            const startY = (props.height - totalTextHeight) / 2;
+            const textX = align === 'center' ? props.width / 2 : align === 'right' ? props.width : 0;
 
             for (let i = 0; i < finalLines.length; i++) {
-              const lineY = startY + i * optimalFontSize * lineHeightMultiplier;
-              ctx.fillText(finalLines[i], textAlignOffset, lineY);
+              const lineY = startY + i * fontSize * lineHeightMultiplier;
+              ctx.fillText(finalLines[i], textX, lineY, props.width);
+
+              if (props.underline) {
+                const textWidth = ctx.measureText(finalLines[i]).width;
+                const underlineY = lineY + fontSize + 1;
+                const underlineStartX =
+                  align === 'center' ? textX - textWidth / 2
+                  : align === 'right' ? textX - textWidth
+                  : textX;
+                ctx.beginPath();
+                ctx.strokeStyle = props.color || '#000000';
+                ctx.lineWidth = Math.max(1, fontSize * 0.05);
+                ctx.moveTo(underlineStartX, underlineY);
+                ctx.lineTo(underlineStartX + textWidth, underlineY);
+                ctx.stroke();
+              }
             }
 
             ctx.restore();
             break;
-        }      
+        }     
       }
     }
 
