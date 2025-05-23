@@ -13,7 +13,7 @@ const fieldFormatting = {
       formatting: [
         "`R ${Number(price).toFixed(0)}`",
         "`R ${Number(price).toFixed(2)}`",
-        "`R ${Number(price).toLocaleString('en-ZA')}`",
+        "`R ${Number(price).toFixed(0).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ',')}`",
         "`R ${Number(Number(Number(price))/1000).toFixed(0)} k`"          
       ]
     },
@@ -23,7 +23,7 @@ const fieldFormatting = {
       formatting: [           
         "`${Number(mileage).toFixed(0)} km`",
         "`${Number(mileage).toFixed(2)} km`",
-        "`${Number(mileage).toLocaleString('en-ZA')} km`",
+        "`${Number(mileage).toFixed(0).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ',')} km`",
         "`${Number(Number(Number(mileage))/1000).toFixed(0)} k km`"              
       ]
     },
