@@ -283,7 +283,6 @@ const generateDesignWithAzureUpload = async (listing, template) => {
   }
 };
 
-
 const handler = async (req, res) => {
   try {
     if (req.method === 'GET') {

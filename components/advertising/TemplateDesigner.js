@@ -20,8 +20,6 @@ const toTitleCase = (str) => {
     .join(' ');
 };
 
-
-
 // Create CSS @font-face rules for loaded fonts
 const createFontFaceRules = (fontDetails) => {
   const rules = [];
@@ -540,9 +538,9 @@ const TemplateDesigner = () => {
       // Wait a bit for CSS to be applied
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      setFontsLoaded(true);
+      setFontsLoaded(true);      
 
-      setForceRenderKey(prev => prev + 1)
+      setTimeout(() => setForceRenderKey(prev => prev + 1), 100);
       
       console.log('Fonts loaded:', fonts);
       console.log('Font variants:', variants);
