@@ -472,7 +472,7 @@ const TemplateDesigner = () => {
       const response = await fetch('/api/fonts/list');
       if (!response.ok) {
         console.error('Failed to fetch font list');
-        setFontsLoaded(true);
+        setFontsLoaded(false);
         return;
       }
       
@@ -541,6 +541,8 @@ const TemplateDesigner = () => {
       await new Promise(resolve => setTimeout(resolve, 100));
       
       setFontsLoaded(true);
+
+      setForceRenderKey(prev => prev + 1)
       
       console.log('Fonts loaded:', fonts);
       console.log('Font variants:', variants);
